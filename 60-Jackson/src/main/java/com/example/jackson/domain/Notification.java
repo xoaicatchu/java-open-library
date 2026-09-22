@@ -18,10 +18,10 @@ import java.util.UUID;
 })
 public abstract class Notification {
     
-    @JsonView(Views.PublicView.class)
+    @JsonView(Views.Public.class)
     private UUID id;
     
-    @JsonView(Views.PublicView.class)
+    @JsonView(Views.Public.class)
     private String message;
 
     public Notification() {}

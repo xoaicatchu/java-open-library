@@ -45,6 +45,11 @@ public class OrderService {
         return orderRepository.save(order);
     }
     
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+    }
+    
     public double calculateDiscount(double amount, int percentage) {
         if (percentage < 0 || percentage > 100) return amount;
         return amount - (amount * percentage / 100.0);

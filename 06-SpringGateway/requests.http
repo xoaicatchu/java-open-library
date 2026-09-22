@@ -1,0 +1,24 @@
+### ============================================================
+### 06-SpringGateway API Testing (Port: 8106)
+### ============================================================
+
+### 1. Basic Route (Path predicate, Header filters, StripPrefix)
+GET http://localhost:8106/api/basic/downstream/hello
+Accept: application/json
+
+### 2. RewritePath Route (Rewrite /api/legacy -> /downstream/new with query param token=123)
+GET http://localhost:8106/api/legacy/sample?token=123
+Accept: application/json
+
+### 3. Circuit Breaker Route (Triggers fallback on error)
+GET http://localhost:8106/api/flaky/downstream/error
+Accept: application/json
+
+### 4. Rate Limited Route (Headers predicate + InMemory Rate Limiter)
+GET http://localhost:8106/api/limited/downstream/hello
+X-RateLimit-App: my-app
+Accept: application/json
+
+### 5. Direct Fallback Endpoint
+GET http://localhost:8106/fallback
+Accept: application/json

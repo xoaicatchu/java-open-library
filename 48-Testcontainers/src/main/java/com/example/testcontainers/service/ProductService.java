@@ -24,4 +24,8 @@ public class ProductService {
     public Product saveProduct(Product product) {
         return repository.save(product);
     }
+
+    public Product getProductById(Long id) {
+        return repository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+    }
 }

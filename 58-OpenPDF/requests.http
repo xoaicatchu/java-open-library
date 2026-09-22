@@ -1,0 +1,11 @@
+### ============================================================
+### 58-OpenPDF PDF Generation API Testing (Port: 8158)
+### ============================================================
+
+### 1. Xuất hóa đơn bán hàng PDF (Bảng chi tiết, căn lề, format tiền tệ)
+GET http://localhost:8158/api/pdf/invoice/1001
+Accept: application/pdf
+
+### 2. Xuất báo cáo tổng hợp PDF (Header, Footer, phân trang tự động)
+GET http://localhost:8158/api/pdf/report
+Accept: application/pdf

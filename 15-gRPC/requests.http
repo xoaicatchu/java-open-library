@@ -1,0 +1,14 @@
+### ============================================================
+### 15-gRPC API & gRPC Testing (REST Port: 8115, gRPC Port: 9090)
+### ============================================================
+
+### 1. Kiểm tra REST API endpoint
+GET http://localhost:8115/api/products/ping
+Accept: application/json
+
+### Ghi chú kiểm thử gRPC (Port: 9090):
+# Bạn có thể dùng Postman (gRPC client) hoặc grpcurl để gọi các RPC đã định nghĩa:
+# - Unary RPC: com.example.grpc.ProductService/GetProduct
+# - Server Streaming: com.example.grpc.ProductService/ListProducts
+# - Client Streaming: com.example.grpc.ProductService/BulkCreateProducts
+# - Bidirectional Streaming: com.example.grpc.ProductService/PriceNegotiation

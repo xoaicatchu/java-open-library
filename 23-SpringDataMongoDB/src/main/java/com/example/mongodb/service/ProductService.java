@@ -33,6 +33,10 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
     // CRUD - Read
     public Optional<Product> getProduct(String id) {
         return productRepository.findById(id);

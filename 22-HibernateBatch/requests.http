@@ -1,0 +1,15 @@
+### Import 100 products
+POST http://localhost:8122/api/batch/import?count=100
+Accept: application/json
+
+### Update prices by percentage
+PUT http://localhost:8122/api/batch/update-prices?category=Electronics&percentage=10
+Accept: application/json
+
+### Delete products with maxPrice 12
+DELETE http://localhost:8122/api/batch/cleanup?maxPrice=12
+Accept: application/json
+
+### Get all products
+GET http://localhost:8122/api/batch/products
+Accept: application/json

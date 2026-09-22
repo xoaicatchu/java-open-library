@@ -1,0 +1,32 @@
+### ============================================================
+### 21-SpringDataR2DBC Reactive API Testing (Port: 8121)
+### ============================================================
+
+### 1. Tạo sản phẩm mới (Reactive Mono<ProductDto>)
+POST http://localhost:8121/products
+Content-Type: application/json
+
+{
+  "name": "Wireless Earbuds",
+  "price": 89.99,
+  "stock": 150
+}
+
+### 2. Lấy sản phẩm theo ID (Mono)
+GET http://localhost:8121/products/1
+Accept: application/json
+
+### 3. Lấy danh sách sản phẩm phân trang (Flux)
+GET http://localhost:8121/products/paged?page=0&size=5
+Accept: application/json
+
+### 4. Tìm sản phẩm tồn kho thấp (@Query Reactive)
+GET http://localhost:8121/products/low-stock?threshold=20
+Accept: application/json
+
+### 5. Tìm theo khoảng giá (DatabaseClient fluent query)
+GET http://localhost:8121/products/price-range?min=50&max=200
+Accept: application/json
+
+### 6. Cập nhật tồn kho (DatabaseClient update fluent)
+PUT http://localhost:8121/products/1/stock?stock=200

@@ -1,0 +1,7 @@
+### ============================================================
+### 24-Flyway Database Migration API Testing (Port: 8124)
+### ============================================================
+
+### 1. Xem lịch sử các phiên bản migration đã áp dụng (V1, V2, V3, V4, R)
+GET http://localhost:8124/api/flyway/history
+Accept: application/json

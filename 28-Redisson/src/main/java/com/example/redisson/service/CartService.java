@@ -27,6 +27,11 @@ public class CartService {
         return redissonClient.getMap("cart:" + sessionId);
     }
 
+    public void removeFromCart(String sessionId, String productId) {
+        RMap<String, CartItem> cart = redissonClient.getMap("cart:" + sessionId);
+        cart.remove(productId);
+    }
+
     // 2. RLock - distributed lock for inventory check
     public boolean updateInventoryWithLock(String productId, int amount) {
         RLock lock = redissonClient.getLock("inventoryLock:" + productId);

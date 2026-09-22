@@ -1,0 +1,21 @@
+### ============================================================
+### 50-Cucumber BDD Testing Endpoints (Port: 8150)
+### ============================================================
+
+### 1. Tạo sản phẩm mới
+POST http://localhost:8150/api/products
+Content-Type: application/json
+
+{
+  "name": "Noise Cancelling Headphones",
+  "category": "Audio",
+  "price": 199.99
+}
+
+### 2. Lấy danh sách tất cả sản phẩm
+GET http://localhost:8150/api/products
+Accept: application/json
+
+### 3. Tìm sản phẩm theo Danh mục (Kịch bản BDD Feature 2)
+GET http://localhost:8150/api/products?category=Audio
+Accept: application/json

@@ -1,0 +1,14 @@
+### Create Order
+POST http://localhost:8103/api/orders
+Content-Type: application/json
+
+{
+  "customerName": "John Doe",
+  "totalAmount": 100.50
+}
+
+### Get All Orders
+GET http://localhost:8103/api/orders
+
+### Get Order By ID
+GET http://localhost:8103/api/orders/1

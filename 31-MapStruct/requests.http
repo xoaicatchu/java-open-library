@@ -1,0 +1,16 @@
+### Map Order to OrderResponse
+POST http://localhost:8131/api/orders/map
+Content-Type: application/json
+
+{
+  "id": 200,
+  "orderNumber": "ORD-99999",
+  "customer": {
+    "id": 2,
+    "name": "Jane Smith",
+    "email": "jane@example.com"
+  }
+}
+
+### Get Sample Order
+GET http://localhost:8131/api/orders/sample

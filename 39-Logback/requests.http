@@ -1,0 +1,12 @@
+### ============================================================
+### 39-Logback Structured Logging & MDC Testing (Port: 8139)
+### ============================================================
+
+### 1. Tạo đơn hàng (Ghi Structured JSON Log với MDC traceId và Logstash Encoder)
+POST http://localhost:8139/orders
+Content-Type: application/json
+
+{
+  "productId": "PROD-999",
+  "quantity": 3
+}

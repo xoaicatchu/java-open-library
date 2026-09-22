@@ -1,0 +1,34 @@
+### ============================================================
+### 54-OpenAPIGenerator API-First Testing (Port: 8154)
+### ============================================================
+
+### 1. Lấy danh sách sản phẩm (Generated Server Stub + Delegate Pattern)
+GET http://localhost:8154/products
+Accept: application/json
+
+### 2. Thêm mới sản phẩm (Tự động validate schema sinh từ api-spec.yaml)
+POST http://localhost:8154/products
+Content-Type: application/json
+
+{
+  "name": "Generated API Product",
+  "price": 189.50,
+  "category": "Electronics"
+}
+
+### 3. Lấy sản phẩm theo ID
+GET http://localhost:8154/products/1
+Accept: application/json
+
+### 4. Cập nhật sản phẩm
+PUT http://localhost:8154/products/1
+Content-Type: application/json
+
+{
+  "name": "Updated API Product",
+  "price": 199.99,
+  "category": "Electronics"
+}
+
+### 5. Xóa sản phẩm theo ID
+DELETE http://localhost:8154/products/1

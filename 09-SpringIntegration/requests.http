@@ -1,0 +1,42 @@
+### ============================================================
+### 09-SpringIntegration API Testing (Port: 8109)
+### ============================================================
+
+### 1. Gửi đơn hàng Standard (EIP: Gateway -> Router -> Standard Pipeline -> Aggregator)
+POST http://localhost:8109/api/orders
+Content-Type: application/json
+
+{
+  "orderId": "ORD-1001",
+  "customerName": "Nguyen Van A",
+  "orderType": "STANDARD",
+  "items": [
+    {
+      "productId": "P1",
+      "quantity": 2,
+      "unitPrice": 50.0
+    },
+    {
+      "productId": "P2",
+      "quantity": 1,
+      "unitPrice": 120.0
+    }
+  ]
+}
+
+### 2. Gửi đơn hàng Express (EIP: Gateway -> Router -> Express Pipeline with Priority Discount)
+POST http://localhost:8109/api/orders
+Content-Type: application/json
+
+{
+  "orderId": "ORD-1002",
+  "customerName": "Tran Thi B",
+  "orderType": "EXPRESS",
+  "items": [
+    {
+      "productId": "P3",
+      "quantity": 1,
+      "unitPrice": 500.0
+    }
+  ]
+}

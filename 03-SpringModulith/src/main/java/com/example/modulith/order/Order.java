@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "orders")
@@ -11,8 +12,9 @@ public class Order {
     @Id
     @GeneratedValue
     private Long id;
-    private String productCode;
-    private int quantity;
+    private String customerName;
+    private BigDecimal totalAmount;
+    private String status;
 
     public Long getId() {
         return id;
@@ -22,19 +24,27 @@ public class Order {
         this.id = id;
     }
 
-    public String getProductCode() {
-        return productCode;
+    public String getCustomerName() {
+        return customerName;
     }
 
-    public void setProductCode(String productCode) {
-        this.productCode = productCode;
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
-    public int getQuantity() {
-        return quantity;
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

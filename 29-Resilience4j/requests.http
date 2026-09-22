@@ -1,0 +1,54 @@
+### ============================================================
+### 29-Resilience4j Fault Tolerance API Testing (Port: 8129)
+### ============================================================
+
+### 1. Test Circuit Breaker (Cầu dao tự ngắt)
+POST http://localhost:8129/api/payments/circuit-breaker
+Content-Type: application/json
+
+{
+  "orderId": "ORD-123",
+  "amount": 250.00
+}
+
+### 2. Test Retry (Thử lại tự động)
+POST http://localhost:8129/api/payments/retry
+Content-Type: application/json
+
+{
+  "orderId": "ORD-124",
+  "amount": 100.00
+}
+
+### 3. Test Rate Limiter (Giới hạn tần suất gọi)
+POST http://localhost:8129/api/payments/rate-limiter
+Content-Type: application/json
+
+{
+  "orderId": "ORD-125",
+  "amount": 50.00
+}
+
+### 4. Test Bulkhead (Cô lập tài nguyên / Giới hạn đồng thời)
+POST http://localhost:8129/api/payments/bulkhead
+Content-Type: application/json
+
+{
+  "orderId": "ORD-126",
+  "amount": 75.00
+}
+
+### 5. Test Time Limiter (Timeout bảo vệ)
+POST http://localhost:8129/api/payments/time-limiter
+Content-Type: application/json
+
+{
+  "orderId": "ORD-127",
+  "amount": 90.00
+}
+
+### 6. Bật giả lập lỗi bên thứ 3 để test Fallback / Cầu dao
+POST http://localhost:8129/api/payments/toggle-failure?fail=true
+
+### 7. Tắt giả lập lỗi (trở lại bình thường)
+POST http://localhost:8129/api/payments/toggle-failure?fail=false

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class EmailNotification extends Notification {
 
-    @JsonView(Views.DetailView.class)
+    @JsonView(Views.Internal.class)
     private String emailAddress;
 
     public EmailNotification() {}

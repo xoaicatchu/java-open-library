@@ -1,0 +1,40 @@
+### Get Sample Order
+GET http://localhost:8147/api/orders/sample
+
+### Validate Valid Order
+POST http://localhost:8147/api/orders/validate
+Content-Type: application/json
+
+{
+  "orderId": "o100",
+  "customer": {
+    "id": "c100",
+    "name": "Jane Doe",
+    "email": "jane@example.com"
+  },
+  "items": [
+    {
+      "id": "p100",
+      "name": "Keyboard",
+      "price": 45.0
+    }
+  ],
+  "metadata": {
+    "source": "mobile"
+  },
+  "orderDate": "2024-10-10T10:00:00"
+}
+
+### Validate Invalid Order
+POST http://localhost:8147/api/orders/validate
+Content-Type: application/json
+
+{
+  "orderId": "",
+  "customer": {
+    "id": "c101",
+    "name": "Invalid User",
+    "email": "invalid-email"
+  },
+  "items": []
+}

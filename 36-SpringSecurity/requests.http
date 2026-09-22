@@ -1,0 +1,68 @@
+### ============================================================
+### 36-SpringSecurity JWT & RBAC API Testing (Port: 8136)
+### ============================================================
+
+### 1. Đăng ký tài khoản USER mới
+POST http://localhost:8136/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "user1",
+  "password": "password123",
+  "role": "ROLE_USER"
+}
+
+### 2. Đăng ký tài khoản ADMIN mới
+POST http://localhost:8136/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin1",
+  "password": "password123",
+  "role": "ROLE_ADMIN"
+}
+
+### 3. Đăng nhập lấy JWT Token (ADMIN)
+# @name loginAdmin
+POST http://localhost:8136/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin1",
+  "password": "password123"
+}
+
+### 4. Đăng nhập lấy JWT Token (USER)
+# @name loginUser
+POST http://localhost:8136/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "user1",
+  "password": "password123"
+}
+
+### 5. Lấy danh sách sản phẩm (Yêu cầu Token - Bất kỳ Role nào)
+GET http://localhost:8136/api/products
+Authorization: Bearer {{loginUser.response.body.token}}
+Accept: application/json
+
+### 6. Thêm sản phẩm mới (Chỉ dành cho ADMIN - @PreAuthorize("hasRole('ADMIN')"))
+POST http://localhost:8136/api/products
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Secured Server Rack",
+  "price": 2500.00
+}
+
+### 7. Thử dùng USER thêm sản phẩm (Mong đợi: 403 Forbidden)
+POST http://localhost:8136/api/products
+Authorization: Bearer {{loginUser.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Hacked Product",
+  "price": 1.00
+}

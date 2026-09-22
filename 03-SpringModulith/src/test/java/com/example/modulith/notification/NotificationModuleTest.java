@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.modulith.test.Scenario;
 
+import java.math.BigDecimal;
+
 @ApplicationModuleTest
 class NotificationModuleTest {
 
@@ -14,7 +16,7 @@ class NotificationModuleTest {
 
     @Test
     void shouldReactToOrderCreatedEvent(Scenario scenario) {
-        scenario.publish(new OrderCreatedEvent(2L, "PROD3", 10))
+        scenario.publish(new OrderCreatedEvent(2L, "Bob", new BigDecimal("150.00")))
                 .andWaitForStateChange(() -> notifications.getNotificationsSent() > 0);
     }
 }

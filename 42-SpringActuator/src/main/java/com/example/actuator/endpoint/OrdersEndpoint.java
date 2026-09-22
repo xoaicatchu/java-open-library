@@ -34,4 +34,10 @@ public class OrdersEndpoint {
             orderStats.compute("completedOrders", (k, v) -> (v == null ? 0 : v) + 1);
         }
     }
+
+    public void reset() {
+        orderStats.put("totalOrders", 100);
+        orderStats.put("pendingOrders", 5);
+        orderStats.put("completedOrders", 95);
+    }
 }

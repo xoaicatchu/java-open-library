@@ -1,0 +1,22 @@
+### ============================================================
+### 37-SpringAuthServer OAuth2 & OIDC Provider API Testing (Port: 8137)
+### ============================================================
+
+### 1. OpenID Connect Discovery Endpoint
+GET http://localhost:8137/.well-known/openid-configuration
+Accept: application/json
+
+### 2. OAuth2 Authorization Server Metadata
+GET http://localhost:8137/.well-known/oauth-authorization-server
+Accept: application/json
+
+### 3. JWK Set Endpoint (Lấy Public Key dùng để xác minh chữ ký JWT Token)
+GET http://localhost:8137/oauth2/jwks
+Accept: application/json
+
+### 4. Cấp Access Token bằng Client Credentials Flow (messaging-client / secret)
+POST http://localhost:8137/oauth2/token
+Authorization: Basic bWVzc2FnaW5nLWNsaWVudDpzZWNyZXQ=
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&scope=message.read

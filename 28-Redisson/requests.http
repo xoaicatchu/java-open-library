@@ -1,0 +1,33 @@
+###
+# Add an item to user cart
+POST http://localhost:8128/api/cart/user123/items
+Content-Type: application/json
+
+{
+  "productId": "prod-1",
+  "quantity": 2,
+  "price": 29.99
+}
+
+###
+# Add another item to user cart
+POST http://localhost:8128/api/cart/user123/items
+Content-Type: application/json
+
+{
+  "productId": "prod-2",
+  "quantity": 1,
+  "price": 49.99
+}
+
+###
+# Get user cart
+GET http://localhost:8128/api/cart/user123
+
+###
+# Delete an item from cart
+DELETE http://localhost:8128/api/cart/user123/items/prod-1
+
+###
+# Test lock demo
+POST http://localhost:8128/api/cart/lock-demo?productId=prod-1&amount=5

@@ -1,0 +1,11 @@
+### ============================================================
+### 52-JMH Performance Microbenchmark API Testing (Port: 8152)
+### ============================================================
+
+### 1. Xem danh sách các bài Benchmark JMH có sẵn
+GET http://localhost:8152/api/benchmarks/info
+Accept: application/json
+
+### 2. Kích hoạt chạy thử nghiệm Benchmark nhanh (1 iteration - StringBenchmark)
+POST http://localhost:8152/api/benchmarks/run-quick
+Accept: application/json

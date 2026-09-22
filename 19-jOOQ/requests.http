@@ -1,0 +1,30 @@
+### Get all products
+GET http://localhost:8119/api/analytics/products
+
+### Get revenue by category
+GET http://localhost:8119/api/analytics/revenue
+
+### Get product ranking by revenue
+GET http://localhost:8119/api/analytics/ranking
+
+### Get top performing products
+GET http://localhost:8119/api/analytics/top
+
+### Batch insert sales
+POST http://localhost:8119/api/analytics/sales/batch
+Content-Type: application/json
+
+[
+  {
+    "productId": 1,
+    "quantity": 10,
+    "saleDate": "2024-03-10",
+    "revenue": 9990.00
+  },
+  {
+    "productId": 2,
+    "quantity": 5,
+    "saleDate": "2024-03-11",
+    "revenue": 3995.00
+  }
+]

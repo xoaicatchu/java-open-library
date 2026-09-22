@@ -99,4 +99,17 @@ public class ProductService {
     public int jpqlUpdatePriceByCategory(Category category, BigDecimal multiplier) {
         return productRepository.updatePriceByCategory(category, multiplier);
     }
+
+    @Transactional
+    public int criteriaBulkDeleteByMaxPrice(BigDecimal maxPrice) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaDelete<Product> delete = cb.createCriteriaDelete(Product.class);
+        Root<Product> root = delete.from(Product.class);
+        delete.where(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+        return entityManager.createQuery(delete).executeUpdate();
+    }
+
+    public List<Product> getAllProducts() {
+        return productRepository.findAllWithCategory();
+    }
 }

@@ -8,15 +8,21 @@ import com.example.mybatis.mapper.ProductMapper;
 import org.apache.ibatis.session.RowBounds;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class MyBatisApplicationTests {
 
     @Autowired
@@ -24,6 +30,9 @@ class MyBatisApplicationTests {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     void testCategoryFindAll() {
@@ -114,5 +123,57 @@ class MyBatisApplicationTests {
         List<Product> cheapProducts = productMapper.findDynamic(null, null, new BigDecimal("20.00"), null);
         assertEquals(1, cheapProducts.size());
         assertEquals("Novel", cheapProducts.get(0).getName());
+    }
+
+    @Test
+    void testControllerGetAllProducts() throws Exception {
+        mockMvc.perform(get("/api/products?page=0&size=5"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    void testControllerSearchDynamic() throws Exception {
+        mockMvc.perform(get("/api/products/search?name=Laptop&minPrice=1000"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].name").value("Laptop"))
+            .andExpect(jsonPath("$[0].category.name").value("Electronics"));
+    }
+
+    @Test
+    void testControllerCreateAndGetProduct() throws Exception {
+        String json = """
+            {
+                "name": "Wireless Mouse",
+                "price": 29.99,
+                "categoryId": 1,
+                "status": "ACTIVE"
+            }
+            """;
+        mockMvc.perform(post("/api/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.name").value("Wireless Mouse"))
+            .andExpect(jsonPath("$.status").value("ACTIVE"));
+    }
+
+    @Test
+    void testControllerCategoryEndpoints() throws Exception {
+        mockMvc.perform(get("/api/categories"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray());
+
+        String newCat = """
+            {
+                "name": "Gaming",
+                "description": "Gaming hardware"
+            }
+            """;
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(newCat))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.name").value("Gaming"));
     }
 }

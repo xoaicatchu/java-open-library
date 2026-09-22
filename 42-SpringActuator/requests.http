@@ -1,0 +1,40 @@
+### ============================================================
+### 42-SpringActuator Production Readiness API Testing (Port: 8142)
+### ============================================================
+
+### 1. Kiểm tra Health Check (Kèm Database & ExternalService Custom Health Indicator)
+GET http://localhost:8142/actuator/health
+Accept: application/json
+
+### 2. Kiểm tra thông tin ứng dụng (CustomInfoContributor)
+GET http://localhost:8142/actuator/info
+Accept: application/json
+
+### 3. Kiểm tra danh sách Metrics có sẵn
+GET http://localhost:8142/actuator/metrics
+Accept: application/json
+
+### 4. Custom Actuator Endpoint: Xem thống kê đơn hàng (@Endpoint(id = "orders"))
+GET http://localhost:8142/actuator/orders
+Accept: application/json
+
+### 5. Custom Actuator Endpoint: Cập nhật thống kê đơn hàng (@WriteOperation)
+POST http://localhost:8142/actuator/orders
+Content-Type: application/json
+
+{
+  "status": "completed"
+}
+
+### 6. Business REST API: Lấy thống kê đơn hàng
+GET http://localhost:8142/api/orders
+Accept: application/json
+
+### 7. Business REST API: Thêm đơn hàng mới
+POST http://localhost:8142/api/orders
+Content-Type: application/json
+
+{
+  "status": "completed"
+}
+

@@ -1,0 +1,42 @@
+### Create Product 1
+POST http://localhost:8123/api/products
+Content-Type: application/json
+
+{
+  "name": "Laptop Pro",
+  "description": "High performance laptop",
+  "price": 1200.50,
+  "category": "Electronics",
+  "tags": ["laptop", "tech"],
+  "reviews": [
+    { "user": "user1", "rating": 5, "comment": "Great!" },
+    { "user": "user2", "rating": 4, "comment": "Good" }
+  ]
+}
+
+### Create Product 2
+POST http://localhost:8123/api/products
+Content-Type: application/json
+
+{
+  "name": "Smart Watch",
+  "description": "Fitness tracking smart watch",
+  "price": 199.99,
+  "category": "Electronics",
+  "tags": ["watch", "tech"],
+  "reviews": [
+    { "user": "user3", "rating": 3, "comment": "Okay" }
+  ]
+}
+
+### Get All Products
+GET http://localhost:8123/api/products
+
+### Search Products
+GET http://localhost:8123/api/products/search?text=laptop
+
+### Get Category Counts
+GET http://localhost:8123/api/products/analytics/category-counts
+
+### Get Average Ratings
+GET http://localhost:8123/api/products/analytics/avg-ratings

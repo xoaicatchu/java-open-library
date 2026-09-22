@@ -1,0 +1,57 @@
+### ============================================================
+### 18-MyBatis API Testing (Port: 8118)
+### ============================================================
+
+### 1. Lấy danh sách sản phẩm (kèm danh mục qua <resultMap> association & phân trang RowBounds)
+GET http://localhost:8118/api/products?page=0&size=10
+Accept: application/json
+
+### 2. Lấy chi tiết sản phẩm theo ID
+GET http://localhost:8118/api/products/1
+Accept: application/json
+
+### 3. Tìm kiếm động (Dynamic SQL với <where>, <if>, <foreach> theo tên, giá, trạng thái)
+GET http://localhost:8118/api/products/search?name=Lap&minPrice=1000&maxPrice=2000&status=ACTIVE,INACTIVE
+Accept: application/json
+
+### 4. Tìm kiếm động chỉ theo khoảng giá
+GET http://localhost:8118/api/products/search?minPrice=500&maxPrice=1500
+Accept: application/json
+
+### 5. Thêm mới sản phẩm (Sử dụng TypeHandler tùy chỉnh cho ProductStatus Enum)
+POST http://localhost:8118/api/products
+Content-Type: application/json
+
+{
+  "name": "Mechanical Keyboard",
+  "price": 150.00,
+  "categoryId": 1,
+  "status": "ACTIVE"
+}
+
+### 6. Cập nhật sản phẩm (MyBatis Dynamic <set> update)
+PUT http://localhost:8118/api/products/1
+Content-Type: application/json
+
+{
+  "name": "Laptop Gaming Pro",
+  "price": 1499.99,
+  "categoryId": 1,
+  "status": "ACTIVE"
+}
+
+### 7. Xóa sản phẩm theo ID
+DELETE http://localhost:8118/api/products/3
+
+### 8. Lấy danh mục sản phẩm (Annotation-based @Select Mapper)
+GET http://localhost:8118/api/categories
+Accept: application/json
+
+### 9. Thêm mới danh mục (Annotation-based @Insert với @Options sinh key tự động)
+POST http://localhost:8118/api/categories
+Content-Type: application/json
+
+{
+  "name": "Peripherals",
+  "description": "Computer peripherals and accessories"
+}

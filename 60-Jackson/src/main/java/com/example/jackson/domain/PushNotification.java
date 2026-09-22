@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class PushNotification extends Notification {
 
-    @JsonView(Views.DetailView.class)
+    @JsonView(Views.Internal.class)
     private String deviceToken;
 
     public PushNotification() {}

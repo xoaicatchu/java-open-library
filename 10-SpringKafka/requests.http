@@ -1,0 +1,44 @@
+### Send single price update
+POST http://localhost:8110/api/prices
+Content-Type: application/json
+
+{
+  "productId": 101,
+  "oldPrice": 150.00,
+  "newPrice": 145.50
+}
+
+### Send batch of price updates
+POST http://localhost:8110/api/prices/batch
+Content-Type: application/json
+
+[
+  {
+    "productId": 201,
+    "oldPrice": 50.00,
+    "newPrice": 48.00
+  },
+  {
+    "productId": 202,
+    "oldPrice": 30.00,
+    "newPrice": 25.00
+  }
+]
+
+### Send invalid price update (should go to DLT)
+POST http://localhost:8110/api/prices
+Content-Type: application/json
+
+{
+  "productId": 999,
+  "oldPrice": 100.00,
+  "newPrice": -10.00
+}
+
+### Get a specific product price (wait a moment for Kafka consumer to process)
+GET http://localhost:8110/api/prices/101
+Accept: application/json
+
+### Get all product prices
+GET http://localhost:8110/api/prices
+Accept: application/json

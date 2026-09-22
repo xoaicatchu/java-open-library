@@ -1,0 +1,41 @@
+### ============================================================
+### 53-SpringDocOpenAPI Swagger UI & API Testing (Port: 8153)
+### ============================================================
+
+### 1. Xem đặc tả OpenAPI Specification JSON toàn bộ hệ thống
+GET http://localhost:8153/v3/api-docs
+Accept: application/json
+
+### 2. Xem đặc tả OpenAPI Nhóm V1 - Products
+GET http://localhost:8153/v3/api-docs/products-v1
+Accept: application/json
+
+### 3. Xem đặc tả OpenAPI Nhóm V2 - Orders
+GET http://localhost:8153/v3/api-docs/orders-v2
+Accept: application/json
+
+### 4. Lấy danh sách sản phẩm (V1 API)
+GET http://localhost:8153/api/v1/products
+Accept: application/json
+
+### 5. Thêm mới sản phẩm (V1 API)
+POST http://localhost:8153/api/v1/products
+Content-Type: application/json
+
+{
+  "name": "Smart Watch",
+  "price": 299.99
+}
+
+### 6. Lấy danh sách đơn hàng (V2 API)
+GET http://localhost:8153/api/v2/orders
+Accept: application/json
+
+### 7. Tạo đơn hàng mới (V2 API)
+POST http://localhost:8153/api/v2/orders
+Content-Type: application/json
+
+{
+  "customerName": "Le Van C",
+  "totalAmount": 599.98
+}

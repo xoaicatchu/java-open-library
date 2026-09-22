@@ -1,0 +1,26 @@
+### ============================================================
+### 34-SpringCloudOpenFeign API Testing (Port: 8134)
+### ============================================================
+
+### 1. Gọi danh sách sản phẩm qua Feign Client
+GET http://localhost:8134/api/products?limit=10
+Accept: application/json
+
+### 2. Gọi chi tiết sản phẩm theo ID (Feign Client gắn kèm Bearer Token qua RequestInterceptor)
+GET http://localhost:8134/api/products/1
+Authorization: Bearer mock-token-abc
+Accept: application/json
+
+### 3. Tạo sản phẩm mới
+POST http://localhost:8134/api/products
+Content-Type: application/json
+
+{
+  "id": null,
+  "name": "Mechanical Keyboard",
+  "price": 129.99
+}
+
+### 4. Test Error Decoder (Gọi ID 999 trả về 404 -> Custom Error Decoder xử lý)
+GET http://localhost:8134/api/products/999
+Accept: application/json

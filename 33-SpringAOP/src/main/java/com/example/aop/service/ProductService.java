@@ -27,7 +27,14 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    public ProductDto getProductById(Long id) {
+        return productRepository.findById(id)
+                .map(p -> new ProductDto(p.getId(), p.getName(), p.getPrice()))
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
+    }
+
     @Auditable(action = "CREATE_PRODUCT")
+    @RateLimit(maxRequests = 3, timeWindowMs = 10000)
     @Transactional
     public ProductDto createProduct(ProductDto dto) {
         Product p = new Product(dto.name(), dto.price());

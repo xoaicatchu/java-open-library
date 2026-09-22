@@ -1,0 +1,20 @@
+### Send Order Notification
+POST http://localhost:8111/api/notifications/order
+Content-Type: application/json
+
+{
+  "orderId": "ORD-001",
+  "customerId": "CUST-001",
+  "amount": 100.50
+}
+
+### Send Payment Notification
+POST http://localhost:8111/api/notifications/payment
+Content-Type: application/json
+
+{
+  "paymentId": "PAY-001",
+  "orderId": "ORD-001",
+  "amount": 100.50,
+  "status": "SUCCESS"
+}

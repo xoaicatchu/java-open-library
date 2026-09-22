@@ -14,4 +14,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Modifying
     @Query("UPDATE Product p SET p.price = p.price * :multiplier WHERE p.category = :category")
     int updatePriceByCategory(@Param("category") Category category, @Param("multiplier") BigDecimal multiplier);
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category")
+    java.util.List<Product> findAllWithCategory();
 }

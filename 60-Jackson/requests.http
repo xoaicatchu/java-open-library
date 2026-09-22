@@ -1,0 +1,31 @@
+### POST Email Notification
+POST http://localhost:8160/api/notifications
+Content-Type: application/json
+
+{
+  "type": "EMAIL",
+  "message": "Welcome to our service!",
+  "emailAddress": "user@example.com"
+}
+
+### POST SMS Notification
+POST http://localhost:8160/api/notifications
+Content-Type: application/json
+
+{
+  "type": "SMS",
+  "message": "Your OTP code is 123456",
+  "phoneNumber": "+1234567890"
+}
+
+### GET Summary (Public View)
+GET http://localhost:8160/api/notifications/{{id}}/summary
+Accept: application/json
+
+### GET Detail (Internal View)
+GET http://localhost:8160/api/notifications/{{id}}/detail
+Accept: application/json
+
+### GET Money Sample (Custom Serializer)
+GET http://localhost:8160/api/money/sample
+Accept: application/json

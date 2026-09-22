@@ -1,0 +1,35 @@
+### ============================================================
+### 26-Caffeine In-Memory Cache API Testing (Port: 8126)
+### ============================================================
+
+### 1. Tạo sản phẩm mới
+POST http://localhost:8126/api/products
+Content-Type: application/json
+
+{
+  "name": "Gaming Keyboard",
+  "price": 99.99
+}
+
+### 2. Lấy sản phẩm qua Spring Cache Abstraction (@Cacheable)
+GET http://localhost:8126/api/products/spring/1
+Accept: application/json
+
+### 3. Lấy sản phẩm qua Manual Cache (Cache<K,V>)
+GET http://localhost:8126/api/products/manual/1
+Accept: application/json
+
+### 4. Lấy sản phẩm qua LoadingCache (tự động load khi miss)
+GET http://localhost:8126/api/products/loading/1
+Accept: application/json
+
+### 5. Lấy sản phẩm qua AsyncLoadingCache (CompletableFuture)
+GET http://localhost:8126/api/products/async/1
+Accept: application/json
+
+### 6. Xóa cache thủ công
+DELETE http://localhost:8126/api/products/manual/1
+
+### 7. Xem thống kê Cache (Hit rate, Miss rate, Eviction count)
+GET http://localhost:8126/api/products/manual/stats
+Accept: text/plain

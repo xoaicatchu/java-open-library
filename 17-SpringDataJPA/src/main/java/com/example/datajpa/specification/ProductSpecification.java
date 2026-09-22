@@ -12,6 +12,10 @@ public class ProductSpecification {
     }
 
     public static Specification<Product> priceGreaterThan(BigDecimal minPrice) {
-        return (root, query, cb) -> minPrice == null ? null : cb.greaterThan(root.get("price"), minPrice);
+        return (root, query, cb) -> minPrice == null ? null : cb.greaterThanOrEqualTo(root.get("price"), minPrice);
+    }
+
+    public static Specification<Product> priceLessThan(BigDecimal maxPrice) {
+        return (root, query, cb) -> maxPrice == null ? null : cb.lessThanOrEqualTo(root.get("price"), maxPrice);
     }
 }

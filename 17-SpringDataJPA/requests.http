@@ -1,0 +1,24 @@
+### Get paginated products
+GET http://localhost:8117/api/products?page=0&size=10
+
+### Get product by ID
+GET http://localhost:8117/api/products/1
+
+### Search products
+GET http://localhost:8117/api/products/search?name=Laptop&minPrice=1000&maxPrice=3000
+
+### Get product summaries
+GET http://localhost:8117/api/products/summaries?name=Laptop
+
+### Create product
+POST http://localhost:8117/api/products
+Content-Type: application/json
+
+{
+  "name": "New Laptop",
+  "price": 2500,
+  "categoryId": 1
+}
+
+### Delete product
+DELETE http://localhost:8117/api/products/1

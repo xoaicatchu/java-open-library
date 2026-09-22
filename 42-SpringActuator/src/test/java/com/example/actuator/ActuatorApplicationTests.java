@@ -1,5 +1,6 @@
 package com.example.actuator;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,6 +18,14 @@ class ActuatorApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private com.example.actuator.endpoint.OrdersEndpoint ordersEndpoint;
+
+    @BeforeEach
+    void setUp() {
+        ordersEndpoint.reset();
+    }
 
     @Test
     void healthEndpoint_shouldReturnUp() throws Exception {
@@ -81,4 +90,18 @@ class ActuatorApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"));
     }
+
+    @Test
+    void demoController_shouldGetAndPostOrders() throws Exception {
+        mockMvc.perform(get("/api/orders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalOrders").isNumber());
+
+        mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\": \"completed\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("completed"));
+    }
 }
+

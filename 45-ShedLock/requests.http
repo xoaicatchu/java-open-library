@@ -1,1 +1,8 @@
-### No endpoints defined, this project focuses on schedulers.
+### Trigger Report Job
+POST http://localhost:8145/api/jobs/report
+
+### Trigger Cleanup Job
+POST http://localhost:8145/api/jobs/cleanup
+
+### Get ShedLock Status
+GET http://localhost:8145/api/jobs/status

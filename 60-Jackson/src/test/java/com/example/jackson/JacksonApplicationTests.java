@@ -36,7 +36,7 @@ class JacksonApplicationTests {
     @Test
     void testJsonViewPublic() throws Exception {
         EmailNotification notification = new EmailNotification(UUID.randomUUID(), "Hello", "test@example.com");
-        String json = objectMapper.writerWithView(Views.PublicView.class).writeValueAsString(notification);
+        String json = objectMapper.writerWithView(Views.Public.class).writeValueAsString(notification);
         assertThat(json).contains("Hello");
         assertThat(json).doesNotContain("test@example.com");
         assertThat(json).contains("\"type\":\"EMAIL\"");
@@ -45,7 +45,7 @@ class JacksonApplicationTests {
     @Test
     void testJsonViewDetail() throws Exception {
         EmailNotification notification = new EmailNotification(UUID.randomUUID(), "Hello", "test@example.com");
-        String json = objectMapper.writerWithView(Views.DetailView.class).writeValueAsString(notification);
+        String json = objectMapper.writerWithView(Views.Internal.class).writeValueAsString(notification);
         assertThat(json).contains("test@example.com");
     }
 

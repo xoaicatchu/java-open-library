@@ -1,0 +1,38 @@
+### Lấy danh sách tất cả nhân viên
+GET http://localhost:8120/api/employees
+
+###
+
+### Lấy thông tin nhân viên theo ID
+GET http://localhost:8120/api/employees/1
+
+###
+
+### Thêm một nhân viên mới
+POST http://localhost:8120/api/employees
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "department": "IT",
+  "email": "jane.doe@example.com"
+}
+
+###
+
+### Thêm nhiều nhân viên
+POST http://localhost:8120/api/employees/batch
+Content-Type: application/json
+
+[
+  {
+    "name": "User One",
+    "department": "SALES",
+    "email": "user.one@example.com"
+  },
+  {
+    "name": "User Two",
+    "department": "HR",
+    "email": "user.two@example.com"
+  }
+]

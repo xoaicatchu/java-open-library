@@ -1,0 +1,27 @@
+### ============================================================
+### 43-Quartz Enterprise Scheduler API Testing (Port: 8143)
+### ============================================================
+
+### 1. Lập lịch Cron Job mới (chạy mỗi 10 giây)
+POST http://localhost:8143/api/jobs/schedule
+Content-Type: application/json
+
+{
+  "jobName": "DailyReportJob",
+  "jobGroup": "REPORTING",
+  "jobClass": "ReportGenerationJob",
+  "cronExpression": "0/10 * * * * ?",
+  "jobData": {
+    "reportType": "FINANCIAL",
+    "requestedBy": "Admin"
+  }
+}
+
+### 2. Tạm dừng Job
+POST http://localhost:8143/api/jobs/REPORTING/DailyReportJob/pause
+
+### 3. Tiếp tục chạy Job
+POST http://localhost:8143/api/jobs/REPORTING/DailyReportJob/resume
+
+### 4. Xóa Job khỏi Quartz Scheduler
+DELETE http://localhost:8143/api/jobs/REPORTING/DailyReportJob

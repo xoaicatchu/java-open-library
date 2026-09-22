@@ -1,0 +1,8 @@
+### ============================================================
+### 41-OpenTelemetry Distributed Tracing API Testing (Port: 8141)
+### ============================================================
+
+### 1. Kích hoạt Span, Manual Span và Baggage Context (@WithSpan, Tracer.spanBuilder)
+GET http://localhost:8141/api/otel/process
+user-id: user-test-12345
+Accept: application/json

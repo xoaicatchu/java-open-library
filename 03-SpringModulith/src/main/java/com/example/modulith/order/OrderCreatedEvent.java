@@ -1,6 +1,5 @@
 package com.example.modulith.order;
 
-import org.springframework.modulith.events.Externalized;
+import java.math.BigDecimal;
 
-@Externalized("order-created::#{#this.orderId()}")
-public record OrderCreatedEvent(Long orderId, String productCode, int quantity) {}
+public record OrderCreatedEvent(Long orderId, String customerName, BigDecimal totalAmount) {}

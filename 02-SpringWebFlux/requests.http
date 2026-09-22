@@ -7,7 +7,7 @@ GET http://localhost:8102/api/products/1
 Accept: application/json
 
 ### Get product by ID (Not Found)
-GET http://localhost:8102/api/products/999
+GET http://localhost:8102/api/products/4
 Accept: application/json
 
 ### Create new product

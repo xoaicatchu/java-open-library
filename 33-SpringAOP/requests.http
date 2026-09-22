@@ -1,0 +1,23 @@
+### Get all products
+GET http://localhost:8133/api/products
+
+### Create a product
+POST http://localhost:8133/api/products
+Content-Type: application/json
+
+{
+  "name": "Laptop",
+  "price": 1200.00
+}
+
+### Create product rapidly (Run this 4 times to see 429 RateLimit)
+POST http://localhost:8133/api/products
+Content-Type: application/json
+
+{
+  "name": "Phone",
+  "price": 800.00
+}
+
+### Check audit logs
+GET http://localhost:8133/api/audit-logs

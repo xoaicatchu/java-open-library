@@ -1,0 +1,37 @@
+### ============================================================
+### 14-EclipsePaho MQTT v5 API Testing (Port: 8114)
+### ============================================================
+
+### 1. Xuất bản lệnh điều khiển IoT (QoS 1, Retained, User Properties)
+POST http://localhost:8114/api/mqtt/publish
+Content-Type: application/json
+
+{
+  "topic": "sensors/device-01/command",
+  "payload": "{\"action\": \"REBOOT\", \"delay\": 5}",
+  "qos": 1,
+  "retained": false,
+  "userPropertyKey": "source",
+  "userPropertyValue": "admin-portal"
+}
+
+### 2. Xuất bản tin nhắn giữ lại (Retained Message - QoS 2)
+POST http://localhost:8114/api/mqtt/publish
+Content-Type: application/json
+
+{
+  "topic": "sensors/device-01/status",
+  "payload": "ONLINE",
+  "qos": 2,
+  "retained": true,
+  "userPropertyKey": "firmware",
+  "userPropertyValue": "v2.1.0"
+}
+
+### 3. Lấy dữ liệu cảm biến mới nhất của tất cả thiết bị
+GET http://localhost:8114/api/mqtt/sensors
+Accept: application/json
+
+### 4. Lấy dữ liệu cảm biến theo ID thiết bị
+GET http://localhost:8114/api/mqtt/sensors/device-01
+Accept: application/json

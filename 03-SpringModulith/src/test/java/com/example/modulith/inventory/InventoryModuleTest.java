@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.modulith.test.Scenario;
 
+import java.math.BigDecimal;
+
 @ApplicationModuleTest
 class InventoryModuleTest {
 
@@ -14,7 +16,7 @@ class InventoryModuleTest {
 
     @Test
     void shouldReactToOrderCreatedEvent(Scenario scenario) {
-        scenario.publish(new OrderCreatedEvent(1L, "PROD2", 5))
+        scenario.publish(new OrderCreatedEvent(1L, "Alice", new BigDecimal("50.00")))
                 .andWaitForStateChange(() -> inventory.getProcessedEvents() > 0);
     }
 }

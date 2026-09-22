@@ -1,0 +1,17 @@
+### ============================================================
+### 51-ArchUnit Layered Architecture Testing (Port: 8151)
+### ============================================================
+
+### 1. Lấy danh sách sản phẩm (Tuân thủ Layered Architecture: Controller -> Service -> Repository)
+GET http://localhost:8151/api/products
+Accept: application/json
+
+### 2. Thêm mới sản phẩm
+POST http://localhost:8151/api/products
+Content-Type: application/json
+
+{
+  "id": null,
+  "name": "Architecture Book",
+  "price": 45.00
+}

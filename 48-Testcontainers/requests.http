@@ -1,0 +1,14 @@
+### Get all products
+GET http://localhost:8148/api/products
+
+### Create a product
+POST http://localhost:8148/api/products
+Content-Type: application/json
+
+{
+  "name": "Sample Product",
+  "price": 29.99
+}
+
+### Get product by ID
+GET http://localhost:8148/api/products/1

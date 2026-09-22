@@ -1,0 +1,35 @@
+### Create a new product
+POST http://localhost:8127/api/products
+Content-Type: application/json
+
+{
+  "name": "Laptop",
+  "price": 1200.0,
+  "locale": "vi"
+}
+
+### Get the product - Should miss cache and query DB first time
+GET http://localhost:8127/api/products/1?locale=vi
+
+### Get the product again - Should hit cache (check application logs to verify DB is not queried)
+GET http://localhost:8127/api/products/1?locale=vi
+
+### Update the product - Should update DB and cache (CachePut)
+PUT http://localhost:8127/api/products/1
+Content-Type: application/json
+
+{
+  "price": 1300.0
+}
+
+### Get the product again - Should return updated price directly from cache
+GET http://localhost:8127/api/products/1?locale=vi
+
+### Evict specific product from cache (CacheEvict)
+DELETE http://localhost:8127/api/products/1/cache
+
+### Get the product - Should miss cache after eviction and query DB
+GET http://localhost:8127/api/products/1?locale=vi
+
+### Evict all products from cache
+DELETE http://localhost:8127/api/products/cache/all

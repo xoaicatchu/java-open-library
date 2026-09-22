@@ -1,0 +1,21 @@
+### ============================================================
+### 59-OpenCSV CSV Import & Export API Testing (Port: 8159)
+### ============================================================
+
+### 1. Xuất danh sách sản phẩm ra tệp CSV (StatefulBeanToCsv)
+GET http://localhost:8159/api/csv/export
+Accept: text/csv
+
+### 2. Nhập dữ liệu sản phẩm từ tệp CSV (CsvToBean)
+# Đính kèm file CSV trong form-data multipart
+POST http://localhost:8159/api/csv/import
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="products.csv"
+Content-Type: text/csv
+
+name,price,category
+"Mechanical Keyboard, RGB",129.99,Electronics
+"Ergonomic Chair",250.00,Furniture
+--boundary--

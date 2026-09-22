@@ -1,34 +1,62 @@
 # 42-SpringActuator - Spring Boot Actuator
 
-> **Cổng dịch vụ (Server Port)**: `8142`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8142-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Production%20Readiness%20&%20Health%20Checks-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Cần cơ chế để cụm Kubernetes biết container nào đang sống (Liveness Probe) và container nào đã sẵn sàng nhận traffic (Readiness Probe).
+### 📌 Thách thức trong thực tế
+Khi triển khai trên Kubernetes hoặc Docker Swarm, hạ tầng không thể biết container nào đang bị treo (đơ luồng, cạn kết nối DB) để tự động khởi động lại, và container nào đã nạp xong dữ liệu để bắt đầu điều phối traffic vào, dẫn tới việc người dùng nhận lỗi 502 Bad Gateway.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Các endpoint quản trị production `/actuator/health`, `/actuator/info`. Tự viết `CustomHealthIndicator` kiểm tra kết nối DB, thanh toán trước khi nhận request.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Cung cấp các đầu dò **Liveness Probe** (`/actuator/health/liveness`) và **Readiness Probe** (`/actuator/health/readiness`) cho Kubernetes.**
+- **Tự viết `CustomHealthIndicator` để kiểm tra kết nối CSDL, Redis, và các cổng thanh toán bên thứ ba trước khi cho phép container nhận khách.**
+- **Cung cấp thông tin phiên bản ứng dụng, git commit, thời gian build qua endpoint `/actuator/info`.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Spring Boot Actuator |
+|:---|:---|:---|
+| **Custom /health REST Controller** | `Ad-hoc Endpoint` | Tự viết thiếu cơ chế gộp trạng thái nhiều thành phần và không phân tách rõ ràng giữa Liveness và Readiness của Kubernetes. |
+| **Prometheus Standalone Exporter** | `Metrics Exporter` | Chỉ đo thông số; Actuator cung cấp cả thông tin sức khỏe (Health), cấu hình môi trường (Env), và Thread Dump. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Tích hợp sẵn nguyên bản trong Spring Boot, kích hoạt cực nhanh chỉ với 1 dependency.**
+- **Tự động tích hợp sâu với cơ chế dò trạng thái của cụm Kubernetes (K8s Probes).**
+- **Cực kỳ an toàn: cho phép cấu hình phân quyền chi tiết các endpoint nhạy cảm thông qua Spring Security.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Nếu cấu hình hớ hênh phơi toàn bộ endpoint (`endpoints.web.exposure.include=*`) mà không có mật khẩu bảo vệ sẽ làm lộ thông tin nhạy cảm (biến môi trường, heap dump).
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Bắt buộc phải có cho 100% ứng dụng Spring Boot chạy trên môi trường Container / Kubernetes. KHÔNG NÊN DÙNG: Không có lý do loại bỏ.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/actuator/controller/DemoController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
-- `com/example/actuator/endpoint/OrdersEndpoint.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/actuator/controller/DemoController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
+- `com/example/actuator/endpoint/OrdersEndpoint.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/actuator/health/ExternalServiceHealthIndicator.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/actuator/health/ExternalServiceHealthIndicator.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -70,27 +98,27 @@ management:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 42-SpringActuator
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8142`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8142`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `GET` | `http://localhost:8142/actuator/health` | 1. Kiểm tra Health Check (Kèm Database & ExternalService Custom Health Indicator) |
 | `GET` | `http://localhost:8142/actuator/info` | 2. Kiểm tra thông tin ứng dụng (CustomInfoContributor) |
@@ -102,6 +130,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

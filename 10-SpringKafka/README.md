@@ -1,32 +1,62 @@
 # 10-SpringKafka - Spring for Apache Kafka
 
-> **Cổng dịch vụ (Server Port)**: `8110`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8110-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Distributed%20Event%20Streaming-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Lưu lượng traffic khủng (hàng trăm ngàn request/giây: log click, định vị tài xế, biến động số dư) cần lưu trữ có thứ tự và không bị mất tin nhắn.
+### 📌 Thách thức trong thực tế
+Khi lượng dữ liệu biến động cực lớn (hàng triệu click chuột, tọa độ GPS tài xế, biến động số dư), các cơ sở dữ liệu quan hệ hoặc Message Broker truyền thống sẽ bị nghẽn cổ chai I/O đĩa và không thể scale ngang việc đọc ghi dữ liệu có thứ tự.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Xương sống event-driven cho các sàn TMĐT (Shopee, Tiki), hệ thống tracking xe (Grab), Data Pipeline đưa dữ liệu về Data Lake/Hadoop. Có sẵn cơ chế Dead Letter Topic (DLT) xử lý tin lỗi.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Xương sống truyền thông điệp (Event-Driven Backbone) cho toàn bộ hệ thống Microservices của sàn thương mại điện tử, đặt xe công nghệ.**
+- **Data Pipeline thu thập log và metrics đẩy về cụm xử lý dữ liệu lớn (ClickHouse, Hadoop, ElasticSearch).**
+- **Xử lý lỗi tin nhắn bằng mô hình Dead Letter Topic (DLT) và Non-blocking Retry topics.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Spring for Apache Kafka |
+|:---|:---|:---|
+| **RabbitMQ** | `Message Broker` | RabbitMQ thiên về định tuyến phức tạp và hàng đợi tác vụ; Kafka vượt trội về throughput hàng triệu tin/giây và khả năng lưu trữ replay tin nhắn. |
+| **Apache Pulsar** | `Next-Gen Streaming` | Pulsar tách biệt tính toán và lưu trữ rất hiện đại, nhưng Kafka có hệ sinh thái và cộng đồng hỗ trợ lớn hơn gấp nhiều lần. |
+| **Redis Streams** | `In-Memory Stream` | Redis Streams nhẹ nhàng hơn nhưng giới hạn bởi dung lượng RAM; Kafka lưu trữ bền bỉ trên đĩa cứng phân tán. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Throughput cực khủng (hàng triệu messages/giây) nhờ cơ chế Sequential I/O và Zero-Copy.**
+- **Lưu trữ dữ liệu phân tán bền bỉ theo thời gian: Consumer có thể replay (đọc lại) dữ liệu từ quá khứ.**
+- **Spring Kafka cung cấp `@KafkaListener`, `KafkaTemplate`, và bộ xử lý lỗi Retry/DLT cực mạnh.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Vận hành cụm Kafka cluster thực tế (Zookeeper/KRaft, Partitions, Rebalancing) rất phức tạp.
+- Không hỗ trợ định tuyến tin nhắn linh hoạt theo wildcard như RabbitMQ Exchange.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Cho hệ thống có lượng traffic khổng lồ, luồng event bất biến, data pipeline, audit log. KHÔNG NÊN DÙNG: Cho các tác vụ hàng đợi đơn giản (background job) hoặc khi không có đội ngũ DevOps vận hành Kafka.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/kafka/controller/PriceController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/kafka/controller/PriceController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/kafka/repository/ProductPriceRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/kafka/repository/ProductPriceRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/kafka/config/KafkaConfig.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
+- `com/example/kafka/config/KafkaConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/kafka/dto/PriceUpdateEvent.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -34,7 +64,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -73,27 +103,27 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 10-SpringKafka
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8110`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8110`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8110/api/prices` | Send single price update |
 | `POST` | `http://localhost:8110/api/prices/batch` | Send batch of price updates |
@@ -103,6 +133,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

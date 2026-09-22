@@ -1,34 +1,62 @@
 # 49-Datafaker - Datafaker
 
-> **Cổng dịch vụ (Server Port)**: `8149`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8149-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Realistic%20Mock%20Data%20Generation-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Cần tạo hàng vạn bản ghi dữ liệu mẫu có nghĩa (tên người Việt Nam, số điện thoại, địa chỉ, biển số xe) để test tải và demo cho khách hàng.
+### 📌 Thách thức trong thực tế
+Khi cần kiểm thử tải (Load Test) hoặc demo phần mềm cho khách hàng, lập trình viên thường gõ dữ liệu mẫu nhàm chán kiểu `test1`, `test2`, `abc@gmail.com`. Dữ liệu này không phản ánh đúng độ dài và định dạng thực tế, dẫn tới bỏ sót các lỗi vỡ giao diện hoặc lỗi tràn độ dài cột trong CSDL.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Sinh dữ liệu giả lập có cấu trúc thực tế, hỗ trợ locale tiếng Việt (`vi_VN`), hỗ trợ seed cố định để tái lập kết quả test.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Tự động sinh hàng vạn bản ghi dữ liệu mẫu có ý nghĩa thực tế: họ tên người Việt Nam, số điện thoại, địa chỉ đường phố, số tài khoản ngân hàng, biển số xe.**
+- **Cung cấp dữ liệu ngẫu nhiên có kiểm soát (cố định Seed) giúp tái lập chính xác kịch bản test khi xảy ra lỗi.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Datafaker |
+|:---|:---|:---|
+| **Java Faker** | `Legacy Faker` | Java Faker đã ngừng bảo trì từ lâu; Datafaker là dự án fork kế thừa hiện đại, chạy nhanh hơn gấp nhiều lần và hỗ trợ Java mới. |
+| **Manual SQL Inserts** | `Hardcoded Data` | Viết tay tốn công sức và dữ liệu bị lặp lại đơn điệu; Datafaker sinh dữ liệu đa dạng phong phú không giới hạn. |
+| **JFixture** | `Object Filler` | JFixture chỉ điền các chuỗi ngẫu nhiên vô nghĩa; Datafaker sinh dữ liệu có ngữ cảnh ngữ nghĩa đời thực. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Hỗ trợ hơn 100 chủ đề dữ liệu: Tài chính, Địa chỉ, Y tế, Công nghệ, Sách báo, Hàng không...**
+- **Hỗ trợ bản địa hóa tiếng Việt (`new Faker(new Locale("vi"))`) sinh họ tên và địa chỉ chuẩn Việt Nam.**
+- **Tốc độ sinh dữ liệu siêu nhanh, tiêu tốn cực ít bộ nhớ.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Một số chủ đề dữ liệu tiếng Việt có thể chưa phong phú bằng dữ liệu tiếng Anh mặc định.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Tạo dữ liệu mẫu cho kiểm thử hiệu năng, seeder khởi tạo dữ liệu ban đầu cho database, demo khách hàng. KHÔNG NÊN DÙNG: Trong logic nghiệp vụ chạy thực tế trên Production.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/datafaker/controller/DatafakerController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/datafaker/controller/DatafakerController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/datafaker/service/FakerService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/datafaker/service/FakerService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/datafaker/repository/CustomerOrderRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
-- `com/example/datafaker/repository/CustomerRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
-- `com/example/datafaker/repository/ProductRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/datafaker/repository/CustomerOrderRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
+- `com/example/datafaker/repository/CustomerRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
+- `com/example/datafaker/repository/ProductRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/datafaker/dto/CustomerDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -39,7 +67,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -62,27 +90,27 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 49-Datafaker
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8149`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8149`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8149/api/faker/seed` | Seed database |
 | `GET` | `http://localhost:8149/api/faker/customers/vn` | Get Vietnamese customers |
@@ -90,6 +118,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

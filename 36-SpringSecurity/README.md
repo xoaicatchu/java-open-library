@@ -1,39 +1,69 @@
 # 36-SpringSecurity - Spring Security 6
 
-> **Cổng dịch vụ (Server Port)**: `8136`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8136-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Enterprise%20Security%20&%20Auth-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Cần bảo mật toàn bộ API, hỗ trợ phân quyền vai trò (RBAC), mã hóa mật khẩu một chiều BCrypt an toàn.
+### 📌 Thách thức trong thực tế
+Tự viết code lọc bảo mật (Custom Filter) rất dễ bỏ sót các lỗ hổng bảo mật nghiêm trọng (CSRF, Session Fixation, Clickjacking, Insecure Password Hashing). Ngoài ra, việc quản lý phân quyền vai trò (RBAC) thủ công khiến mã nguồn rối rắm và khó kiểm toán bảo mật.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Kiến trúc chuẩn `SecurityFilterChain` không session (Stateless API), xác thực JWT Bearer token, phân quyền chi tiết tới từng method bằng `@PreAuthorize("hasRole('ADMIN')")`.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Bảo vệ toàn bộ hệ thống REST API bằng cơ chế phi trạng thái (Stateless API) xác thực qua JWT Bearer Token.**
+- **Mã hóa mật khẩu một chiều an toàn bằng thuật toán BCrypt với Salt tự động.**
+- **Phân quyền chi tiết tới từng phương thức nghiệp vụ bằng `@PreAuthorize("hasRole('ADMIN')")`.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Spring Security 6 |
+|:---|:---|:---|
+| **Apache Shiro** | `Java Security Framework` | Shiro nhẹ hơn nhưng không cập nhật nhanh và không tích hợp sâu bằng Spring Security vào hệ sinh thái Spring. |
+| **Sa-Token** | `Lightweight Auth Library` | Sa-Token rất nổi tiếng ở cộng đồng châu Á vì nhẹ; Spring Security là tiêu chuẩn vàng cấp tập đoàn toàn cầu. |
+| **Custom JWT Filter** | `Ad-hoc Solution` | Tự viết filter dễ dính lỗi bảo mật nguy hiểm và không tận dụng được kiến trúc `SecurityContext` của Spring. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Khung bảo mật toàn diện và an toàn nhất thế giới cho ứng dụng Java Enterprise.**
+- **Cấu hình chuẩn hóa hiện đại bằng `SecurityFilterChain` Bean hoàn toàn không còn class kế thừa `WebSecurityConfigurerAdapter` cũ kỹ.**
+- **Tích hợp sẵn các cơ chế bảo vệ phòng chống tấn công phổ biến nhất của OWASP.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Hệ thống Filter Chain đồ sộ khiến việc debug khi cấu hình sai trở nên khá khó khăn đối với người mới.
+- Nhiều tài liệu trên mạng đã lỗi thời do Spring Security 6 có nhiều thay đổi lớn về cú pháp Lambda DSL.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Tiêu chuẩn bảo mật bắt buộc cho mọi ứng dụng doanh nghiệp. KHÔNG NÊN DÙNG: Chỉ khi dự án là một tool dòng lệnh (CLI) nội bộ không có kết nối mạng và không cần phân quyền.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/security/controller/AuthController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
-- `com/example/security/controller/ProductController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/security/controller/AuthController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
+- `com/example/security/controller/ProductController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/security/security/CustomUserDetailsService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
-- `com/example/security/service/AuthService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/security/security/CustomUserDetailsService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
+- `com/example/security/service/AuthService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/security/repository/ProductRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
-- `com/example/security/repository/UserRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/security/repository/ProductRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
+- `com/example/security/repository/UserRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/security/SecurityApplication.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
-- `com/example/security/config/SecurityConfig.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
+- `com/example/security/SecurityApplication.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
+- `com/example/security/config/SecurityConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/security/dto/AuthRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -45,7 +75,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -74,27 +104,27 @@ jwt:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 36-SpringSecurity
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8136`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8136`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8136/api/auth/register` | 1. Đăng ký tài khoản USER mới |
 | `POST` | `http://localhost:8136/api/auth/register` | 2. Đăng ký tài khoản ADMIN mới |
@@ -106,6 +136,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

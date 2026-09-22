@@ -1,32 +1,61 @@
 # 07-AxonFramework - Axon Framework
 
-> **Cổng dịch vụ (Server Port)**: `8107`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8107-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-CQRS%20&%20Event%20Sourcing-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Các giao dịch tài chính, ví điện tử cần lưu lại lịch sử biến động số dư tuyệt đối chính xác (không bao giờ được ghi đè `UPDATE account SET balance = ...`).
+### 📌 Thách thức trong thực tế
+Trong hệ thống tài chính, ngân hàng, ví điện tử, việc sử dụng lệnh `UPDATE account SET balance = ...` thông thường sẽ làm mất toàn bộ lịch sử biến động số dư, không thể kiểm toán (audit) khi xảy ra tranh chấp và rất khó giải quyết bài toán giao dịch phân tán giữa nhiều dịch vụ.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Kiến trúc **Event Sourcing + CQRS**. Mọi thay đổi lưu dưới dạng chuỗi sự kiện bất biến (`MoneyDeposited`, `MoneyWithdrawn`). Quản lý Saga điều phối giao dịch phân tán giữa nhiều dịch vụ.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Sổ cái tài chính ngân hàng, ví điện tử, hệ thống chứng khoán áp dụng mô hình Event Sourcing.**
+- **Điều phối các quy trình phân tán phức tạp (Saga Pattern) như đặt vé máy bay: giữ chỗ -> trừ tiền -> xuất vé -> hoàn tiền nếu lỗi.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Axon Framework |
+|:---|:---|:---|
+| **Eventuate Tram / Local** | `Event Sourcing Framework` | Eventuate tập trung vào transactional messaging; Axon hoàn chỉnh cả DDD, Aggregate, Event Store và Saga. |
+| **Spring ApplicationEvent + Kafka** | `Custom CQRS` | Tự code tốn hàng tháng trời để xử lý Aggregate snapshotting, replay event, idempotency; Axon hỗ trợ out-of-the-box. |
+| **Debezium (CDC)** | `Change Data Capture` | Debezium bắt sự kiện ở mức DB log; Axon bắt sự kiện ở mức Domain Intent (nghiệp vụ có chủ đích). |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Cung cấp giải pháp toàn diện cho CQRS (tách biệt luồng ghi Command và luồng đọc Query) và Event Sourcing.**
+- **Tích hợp sẵn quản lý Saga điều phối giao dịch phân tán (Distributed Transactions).**
+- **Khả năng Audit bất biến 100%: mọi trạng thái hiện tại đều có thể tái lập bằng cách replay các sự kiện trong quá khứ.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Độ phức tạp kiến trúc và chi phí triển khai rất cao.
+- Mô hình Eventual Consistency (nhất quán sau cùng) đòi hỏi Frontend phải xử lý bất đồng bộ, không thể thấy dữ liệu mới ngay lập tức.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Các hệ thống FinTech, ngân hàng, bảo hiểm, logistics cần audit nghiêm ngặt và quản lý Saga phức tạp. KHÔNG NÊN DÙNG: Các ứng dụng CRUD phổ thông nơi mà việc ghi đè bản ghi đơn giản là đủ.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/axon/controller/AccountController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/axon/controller/AccountController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/axon/exception/GlobalExceptionHandler.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/axon/exception/GlobalExceptionHandler.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/axon/query/AccountSummaryRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/axon/query/AccountSummaryRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/axon/coreapi/AccountCreatedEvent.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -36,7 +65,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -71,27 +100,27 @@ axon:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 07-AxonFramework
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8107`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8107`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8107/accounts` | Create Account |
 | `POST` | `http://localhost:8107/accounts/{{accountId}}/deposit` | Deposit Money |
@@ -100,6 +129,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

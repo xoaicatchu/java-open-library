@@ -1,36 +1,65 @@
 # 26-Caffeine - Caffeine Cache
 
-> **Cổng dịch vụ (Server Port)**: `8126`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8126-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-High-Performance%20In-Memory%20Cache-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Dữ liệu danh mục, cấu hình hệ thống, tỉ giá đọc liên tục hàng triệu lần nhưng rất ít khi đổi. Đọc DB liên tục làm DB quá tải.
+### 📌 Thách thức trong thực tế
+Các dữ liệu đọc thường xuyên (danh mục sản phẩm, cấu hình hệ thống, tỷ giá, thông tin user) được gọi hàng triệu lần mỗi phút. Nếu mỗi lần đều gọi sang Redis qua mạng hoặc query vào Database, độ trễ mạng (Network Latency) và tải I/O sẽ khiến hệ thống bị chậm chạp và tốn chi phí hạ tầng.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Local In-Memory Cache nhanh nhất thế giới cho JVM (thuật toán W-TinyLFU tối ưu tỉ lệ hit cache). Tốc độ đọc Nano-giây ngay trong RAM máy chủ.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Bộ nhớ đệm cục bộ (Local In-Memory L1 Cache) siêu tốc ngay trong RAM của JVM với độ trễ nano-giây.**
+- **Hạn chế các cuộc tấn công quét dữ liệu lặp lại làm nghẽn kết nối mạng tới Redis/Database.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Caffeine Cache |
+|:---|:---|:---|
+| **Guava Cache** | `Legacy Local Cache` | Caffeine là bản viết lại kế thừa Guava Cache với thuật toán W-TinyLFU tối ưu tỉ lệ trúng cache (hit rate) cao hơn và throughput nhanh hơn gấp 2-3 lần. |
+| **Redis** | `Distributed Cache` | Redis chạy qua mạng mất từ 1-5ms; Caffeine chạy ngay trong RAM JVM mất dưới 1 microsecond. |
+| **Ehcache 3** | `Java Cache` | Ehcache có hỗ trợ lưu trữ phân tầng ra đĩa cứng (off-heap/disk); Caffeine tối ưu tuyệt đối cho in-memory. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Thư viện Local Cache hiệu năng cao nhất thế giới hiện nay cho Java, sử dụng thuật toán eviction W-TinyLFU tối ưu hit rate đỉnh cao.**
+- **Độ trễ truy xuất cấp độ Nano-giây (không tốn chi phí serialize qua mạng như Redis).**
+- **Hỗ trợ đầy đủ tính năng: expireAfterWrite, expireAfterAccess, refreshAfterWrite, maximumSize, recordStats.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Chỉ tồn tại trong bộ nhớ của từng node JVM riêng lẻ: khi chạy nhiều cụm server, dữ liệu có thể bị lệch nhau giữa các node.
+- Bị giới hạn bởi dung lượng RAM của ứng dụng Java (Heap Size).
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Dữ liệu đọc cực lớn, hiếm khi thay đổi (danh mục, mã bưu chính, config), hoặc làm tầng đệm L1 Cache phía trước Redis. KHÔNG NÊN DÙNG: Khi cần dữ liệu cache chia sẻ đồng nhất 100% giữa hàng chục server khác nhau (khi đó phải dùng Redis).**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/caffeine/controller/ProductController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/caffeine/controller/ProductController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/caffeine/exception/GlobalExceptionHandler.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
-- `com/example/caffeine/service/ProductService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/caffeine/exception/GlobalExceptionHandler.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
+- `com/example/caffeine/service/ProductService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/caffeine/repository/ProductRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/caffeine/repository/ProductRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/caffeine/config/CacheConfig.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
+- `com/example/caffeine/config/CacheConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/caffeine/dto/ProductDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -38,7 +67,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 spring:
@@ -62,27 +91,27 @@ server:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 26-Caffeine
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8126`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8126`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8126/api/products` | 1. Tạo sản phẩm mới |
 | `GET` | `http://localhost:8126/api/products/spring/1` | 2. Lấy sản phẩm qua Spring Cache Abstraction (@Cacheable) |
@@ -94,6 +123,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

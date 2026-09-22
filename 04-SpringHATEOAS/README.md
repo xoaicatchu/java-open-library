@@ -1,32 +1,61 @@
 # 04-SpringHATEOAS - Spring HATEOAS
 
-> **Cổng dịch vụ (Server Port)**: `8104`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8104-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Web%20&%20Hypermedia-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Client (Mobile/Web) phải hardcode URL từng endpoint. Khi backend đổi URL hoặc state của object thay đổi (VD: Đơn hàng đã HỦY thì không được hiển thị nút THANH TOÁN), client dễ bị lỗi.
+### 📌 Thách thức trong thực tế
+REST API thông thường chỉ trả về dữ liệu thô. Client (Web/Mobile) phải hardcode đường dẫn URL cho từng thao tác tiếp theo. Khi backend thay đổi cấu trúc URL hoặc trạng thái thực thể thay đổi, client dễ bị lỗi do gọi sai URL không hợp lệ.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Trả về kèm danh sách liên kết hành động khả dĩ (`links`). Ứng dụng trong Public API, ngân hàng mở (Open Banking API).
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Cung cấp Public APIs và Open Banking APIs cho các đối tác bên ngoài tự động khám phá các thao tác khả dĩ.**
+- **Ứng dụng State-Machine driven UI: Frontend hiển thị nút bấm (Thanh toán, Hủy đơn, Đổi trả) hoàn toàn dựa vào mảng `_links` trả về từ Backend.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Spring HATEOAS |
+|:---|:---|:---|
+| **Plain REST API** | `Standard JSON` | Plain REST trả về JSON phẳng nhẹ hơn nhưng client phải tự quản lý logic điều hướng URL. |
+| **GraphQL** | `Query Language` | GraphQL cho phép client chủ động query trường nhưng không theo chuẩn định hướng liên kết Hypermedia của REST. |
+| **JSON:API Spec** | `Specification` | JSON:API là một chuẩn định dạng tương tự HAL nhưng Spring HATEOAS hỗ trợ linh hoạt cả HAL, HAL-FORMS, Collection+JSON. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Đạt chuẩn REST Maturity Level 3 (mức trưởng thành cao nhất của RESTful API).**
+- **Giảm thiểu sự phụ thuộc chặt giữa Frontend và Backend (loose coupling).**
+- **Hỗ trợ tạo link an toàn theo kiểu dữ liệu (type-safe) bằng `WebMvcLinkBuilder`.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Payload JSON phình to do chứa nhiều metadata và liên kết URLs.
+- Đội ngũ Frontend phải thay đổi thói quen đọc dữ liệu (phải parse cấu trúc HAL `_embedded` và `_links`).
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Cho Public APIs, cổng tích hợp đối tác B2B, hệ thống workflow phức tạp. KHÔNG NÊN DÙNG: Cho các API nội bộ đơn giản, mobile app bị giới hạn nghiêm ngặt về băng thông mạng 3G/4G.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/hateoas/controller/EmployeeController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/hateoas/controller/EmployeeController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/hateoas/service/EmployeeService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/hateoas/service/EmployeeService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/hateoas/repository/EmployeeRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/hateoas/repository/EmployeeRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/hateoas/assembler/EmployeeModelAssembler.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -35,7 +64,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -63,27 +92,27 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 04-SpringHATEOAS
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8104`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8104`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `GET` | `http://localhost:8104/employees` | GET all employees |
 | `GET` | `http://localhost:8104/employees/1` | GET employee by ID (Replace {id} with actual ID) |
@@ -94,6 +123,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

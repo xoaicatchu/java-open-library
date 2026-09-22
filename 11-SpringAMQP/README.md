@@ -1,29 +1,58 @@
-# 11-SpringAMQP - Spring AMQP / RabbitMQ
+# 11-SpringAMQP - Spring AMQP (RabbitMQ)
 
-> **Cổng dịch vụ (Server Port)**: `8111`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
-
----
-
-## 1. Giới Thiệu & Bài Toán Giải Quyết
-
-### 📌 Vấn đề Thực Tế (Pain Point)
-Cần định tuyến tin nhắn thông minh theo routing key (ví dụ: cảnh báo lỗi gửi sang hàng đợi ưu tiên, thông tin thường gửi hàng đợi thường) và cơ chế xác nhận xử lý (ACK/NACK).
-
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Hàng đợi gửi Email/SMS thông báo, xử lý background job, xuất file báo cáo nặng cho người dùng.
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8111-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Enterprise%20Message%20Broker-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
+
+### 📌 Thách thức trong thực tế
+Cần định tuyến tin nhắn thông minh theo nhiều tiêu chí (ví dụ: cảnh báo khẩn gửi hàng đợi ưu tiên, tin khuyến mãi gửi hàng đợi chậm), kèm cơ chế xác nhận xử lý (ACK) chặt chẽ để đảm bảo không một tác vụ ngầm nào bị mất mát.
+
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Hàng đợi gửi Email/SMS thông báo, xuất báo cáo Excel nặng ngầm cho người dùng.**
+- **Giao tiếp điểm-tới-điểm (RPC) hoặc định tuyến theo chủ đề (Topic / Direct / Fanout Exchange) giữa các microservice.**
+
+---
+
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Spring AMQP (RabbitMQ) |
+|:---|:---|:---|
+| **Apache Kafka** | `Distributed Streaming` | Kafka tối ưu cho log streaming dung lượng lớn; RabbitMQ tối ưu cho tác vụ định tuyến phức tạp, hàng đợi ưu tiên và xác nhận ACK/NACK. |
+| **ActiveMQ / Artemis** | `JMS Broker` | ActiveMQ theo chuẩn JMS cũ; RabbitMQ theo chuẩn AMQP hiện đại, linh hoạt và hiệu năng cao hơn. |
+| **Redis Pub/Sub** | `In-Memory Pub/Sub` | Redis Pub/Sub không có cơ chế ACK và lưu trữ tin khi client offline; RabbitMQ đảm bảo tin cậy 100%. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Mô hình định tuyến Exchange - Binding - Queue cực kỳ linh hoạt (Direct, Fanout, Topic, Headers).**
+- **Hỗ trợ đầy đủ Message ACK, NACK, Dead Letter Exchange (DLX), Priority Queues, TTL.**
+- **Giao diện quản trị Web UI trực quan, dễ dàng theo dõi số lượng tin nhắn trong hàng đợi.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Throughput tối đa thấp hơn Apache Kafka (thường chỉ đạt hàng chục ngàn tin/giây).
+- Tin nhắn sau khi consumer xác nhận ACK thành công sẽ bị xóa khỏi hàng đợi (không thể replay như Kafka).
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Cho hệ thống xử lý tác vụ background, thông báo, đơn hàng cần định tuyến linh hoạt và bảo đảm xử lý từng tin. KHÔNG NÊN DÙNG: Cho việc thu thập log streaming hàng triệu event/giây (khi đó chọn Kafka).**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/amqp/controller/NotificationController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/amqp/controller/NotificationController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
 ### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/amqp/config/RabbitConfig.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
+- `com/example/amqp/config/RabbitConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/amqp/dto/OrderNotification.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -31,7 +60,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -57,33 +86,34 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 11-SpringAMQP
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8111`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8111`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8111/api/notifications/order` | Send Order Notification |
 | `POST` | `http://localhost:8111/api/notifications/payment` | Send Payment Notification |
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

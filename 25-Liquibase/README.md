@@ -1,30 +1,58 @@
 # 25-Liquibase - Liquibase
 
-> **Cổng dịch vụ (Server Port)**: `8125`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8125-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Database%20Schema%20Migration-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Dự án cần hỗ trợ triển khai trên nhiều loại CSDL khác nhau (cả Oracle, PostgreSQL, SQL Server) hoặc cần tính năng Rollback tự động khi lỗi.
+### 📌 Thách thức trong thực tế
+Sản phẩm phần mềm đóng gói (On-Premises Software) cần cài đặt trên hạ tầng của nhiều khách hàng khác nhau (khách hàng dùng Oracle, khách hàng dùng PostgreSQL, khách hàng dùng SQL Server). Nếu viết script SQL riêng cho từng hệ quản trị CSDL thì chi phí bảo trì tăng gấp 3-4 lần.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Định nghĩa thay đổi CSDL bằng YAML/XML độc lập với hệ quản trị CSDL, có hỗ trợ rollback script chặt chẽ.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Định nghĩa cấu trúc CSDL bằng ChangeSet định dạng YAML/XML/JSON độc lập hoàn toàn với loại CSDL.**
+- **Các hệ thống yêu cầu nghiêm ngặt về khả năng tự động hoàn tác (Rollback Migration) khi quá trình deploy gặp sự cố.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Liquibase |
+|:---|:---|:---|
+| **Flyway** | `SQL-based Migration` | Flyway dùng SQL thuần đơn giản hơn; Liquibase hỗ trợ đa CSDL, rollback tự động và điều kiện chạy (preconditions) mạnh mẽ hơn. |
+| **Hibernate hbm2ddl** | `ORM Schema Generator` | Liquibase kiểm soát phiên bản chính xác qua từng ChangeSet; Hibernate tự sinh không an toàn cho Production. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Độc lập với hệ quản trị CSDL: viết ChangeSet 1 lần, Liquibase tự sinh SQL tương ứng cho Oracle, Postgres, MySQL, SQL Server.**
+- **Hỗ trợ Rollback tự động mạnh mẽ thông qua thẻ `<rollback>` được định nghĩa trong ChangeSet.**
+- **Cung cấp cơ chế Preconditions (tiền điều kiện kiểm tra trước khi chạy script) và Contexts (chạy script theo môi trường dev/prod).**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Cú pháp khai báo bằng XML/YAML dài dòng và khó đọc hơn so với viết câu lệnh SQL thuần túy.
+- Độ dốc học tập cao hơn so với Flyway.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Cho các sản phẩm phần mềm đóng gói thương mại triển khai trên nhiều hệ CSDL hoặc yêu cầu rollback tự động. KHÔNG NÊN DÙNG: Cho các dự án web thông thường chỉ dùng duy nhất 1 loại CSDL (khi đó Flyway đơn giản và trực quan hơn).**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/liquibase/controller/LiquibaseStatusController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/liquibase/controller/LiquibaseStatusController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/liquibase/repository/DepartmentRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
-- `com/example/liquibase/repository/EmployeeRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/liquibase/repository/DepartmentRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
+- `com/example/liquibase/repository/EmployeeRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/liquibase/entity/Department.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -32,7 +60,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 spring:
@@ -59,32 +87,33 @@ server:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 25-Liquibase
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8125`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8125`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `GET` | `http://localhost:8125/api/liquibase/status` | Thực thi GET http://localhost:8125/api/liquibase/status |
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

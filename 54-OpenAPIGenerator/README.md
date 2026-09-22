@@ -1,33 +1,62 @@
 # 54-OpenAPIGenerator - OpenAPI Generator
 
-> **Cổng dịch vụ (Server Port)**: `8154`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8154-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-API-First%20Code%20Generation-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Mỗi khi Backend đổi model, đội Frontend (React/TypeScript) và Mobile (Flutter/Kotlin) phải tự tay ngồi gõ lại code Model và API Client, rất dễ sai sót.
+### 📌 Thách thức trong thực tế
+Mỗi khi Backend thay đổi trường dữ liệu, đội Frontend (TypeScript) và Mobile (Flutter/Swift) phải ngồi gõ lại các Model class bằng tay. Quá trình này vừa nhàm chán vừa dễ gõ sai chính tả, gây lỗi không tương thích giữa các nền tảng.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Hướng tiếp cận **API-First**. Viết file đặc tả `api-spec.yaml` trước, sau đó plugin tự động sinh ra toàn bộ code Server Interface (Java) và Client SDK (TypeScript/Dart/Swift).
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Áp dụng quy trình **API-First**: Thiết kế và thống nhất file đặc tả `api-spec.yaml` giữa các team trước khi viết code.**
+- **Maven Plugin tự động sinh ra toàn bộ Interface Controller phía Server và SDK gọi API phía Client cho hơn 40 ngôn ngữ khác nhau.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với OpenAPI Generator |
+|:---|:---|:---|
+| **Swagger Codegen** | `Legacy Generator` | OpenAPI Generator là bản fork cộng đồng độc lập phát triển mạnh mẽ và cập nhật nhanh hơn Swagger Codegen rất nhiều. |
+| **SpringDoc (Code-First)** | `Code-First Documentation` | SpringDoc viết code rồi sinh spec; OpenAPI Generator viết spec trước rồi sinh code, tối ưu cho quy trình làm việc song song. |
+| **Manual Coding** | `Hand-written Code` | Tự code hai đầu tốn thời gian và hay lệch hợp đồng; tự động sinh mã đảm bảo 100% khớp hợp đồng API. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Quy trình API-First chuẩn mực: Frontend và Backend có thể bắt đầu làm việc song song ngay sau khi chốt file YAML đặc tả.**
+- **Hỗ trợ mô hình Delegate Pattern (`delegatePattern = true`): code tự sinh nằm ở thư mục riêng, code nghiệp vụ viết ở class Delegate, không sợ bị ghi đè khi re-generate.**
+- **Sinh SDK cho hầu hết mọi ngôn ngữ lập trình (TypeScript, Dart, Swift, Go, Python, C#).**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Cần cấu hình plugin Maven/Gradle khá chi tiết để tùy biến package và đường dẫn file sinh ra.
+- Cần kỷ luật cao trong việc cập nhật file YAML khi có yêu cầu thay đổi nghiệp vụ.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Các dự án lớn có nhiều team đa nền tảng (Web, Mobile, Backend) làm việc song song. KHÔNG NÊN DÙNG: Các dự án nhỏ chỉ có 1 lập trình viên full-stack tự làm từ A-Z (khi đó Code-First với SpringDoc nhanh hơn).**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/openapigen/controller/ProductsApiDelegateImpl.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/openapigen/controller/ProductsApiDelegateImpl.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/openapigen/service/ProductService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/openapigen/service/ProductService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -42,27 +71,27 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 54-OpenAPIGenerator
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8154`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8154`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `GET` | `http://localhost:8154/products` | 1. Lấy danh sách sản phẩm (Generated Server Stub + Delegate Pattern) |
 | `POST` | `http://localhost:8154/products` | 2. Thêm mới sản phẩm (Tự động validate schema sinh từ api-spec.yaml) |
@@ -72,6 +101,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

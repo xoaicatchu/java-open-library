@@ -1,34 +1,63 @@
 # 60-Jackson - Jackson Advanced
 
-> **Cổng dịch vụ (Server Port)**: `8160`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8160-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-JSON%20Serialization%20&%20Data%20Binding-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Cùng một API, người dùng thông thường chỉ được xem 3 trường tóm tắt, còn Admin được xem toàn bộ 10 trường; hoặc cần parse đối tượng đa hình (Polymorphic JSON: Con mèo, Con chó cùng kế thừa Động vật).
+### 📌 Thách thức trong thực tế
+Trong thực tế, một API cần ẩn giấu một số trường dữ liệu đối với người dùng thường nhưng lại hiển thị cho Admin; hoặc cần tuần hoàn các đối tượng đa hình (Polymorphism: class cha `Notification` có các con `EmailNotification`, `SmsNotification`). Nếu chỉ dùng JSON parser cơ bản, việc này sẽ đòi hỏi hàng tá code `if/else` thủ công phức tạp.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Các tính năng nâng cao của Jackson: `@JsonView` (lọc thuộc tính trả về theo vai trò), `@JsonTypeInfo` (đa hình), Custom Serializer (format tiền tệ, ngày tháng ISO-8601), MixIn (gắn annotation vào class thư viện thứ 3).
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Phân quyền hiển thị thuộc tính JSON theo vai trò người dùng bằng `@JsonView`.**
+- **Xử lý tuần hoàn và giải mã đối tượng đa hình (Polymorphic Deserialization) bằng `@JsonTypeInfo` và `@JsonSubTypes`.**
+- **Viết các bộ Serializer / Deserializer tùy biến định dạng tiền tệ hoặc ngày tháng đặc thù.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Jackson Advanced |
+|:---|:---|:---|
+| **Google Gson** | `Lightweight JSON Library` | Gson đơn giản hơn cho dự án nhỏ; Jackson là thư viện mặc định của Spring Boot, mạnh hơn về tính năng nâng cao và hiệu năng. |
+| **Alibaba Fastjson 2** | `High-Speed JSON Parser` | Fastjson rất nhanh ở Trung Quốc nhưng trong quá khứ dính nhiều lỗ hổng bảo mật nghiêm trọng; Jackson an toàn và ổn định hơn nhiều. |
+| **Moshi** | `Modern Android JSON` | Moshi tối ưu hóa cho Kotlin và Android; Jackson là chuẩn công nghiệp cho Backend Java Enterprise. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Thư viện tuần hoàn JSON toàn diện và phổ biến nhất thế giới Java, là trái tim của Spring Web.**
+- **Khả năng mở rộng vô hạn: Custom Serializer/Deserializer, MixIn (gắn annotation vào class của thư viện thứ 3), Module hỗ trợ Java 21 Record và Java Time.**
+- **Tốc độ xử lý và khả năng tối ưu hóa bộ nhớ cực kỳ xuất sắc.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Cần cẩn trọng cấu hình `DefaultTyping` để tránh các lỗ hổng bảo mật Remote Code Execution (RCE) khi deserialize dữ liệu không tin cậy.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Tiêu chuẩn số 1 cho mọi thao tác xử lý JSON trong Spring Boot. KHÔNG NÊN DÙNG: Không có lý do loại bỏ.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/jackson/controller/MoneyController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
-- `com/example/jackson/controller/NotificationController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/jackson/controller/MoneyController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
+- `com/example/jackson/controller/NotificationController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
 ### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/jackson/config/JacksonConfig.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
+- `com/example/jackson/config/JacksonConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -43,27 +72,27 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 60-Jackson
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8160`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8160`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8160/api/notifications` | POST Email Notification |
 | `POST` | `http://localhost:8160/api/notifications` | POST SMS Notification |
@@ -73,6 +102,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

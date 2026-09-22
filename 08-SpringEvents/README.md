@@ -1,34 +1,63 @@
 # 08-SpringEvents - Spring ApplicationEvent
 
-> **Cổng dịch vụ (Server Port)**: `8108`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8108-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-In-Memory%20Event%20Driven-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Sau khi đăng ký tài khoản thành công, muốn gửi email, tạo ví khuyến mãi, cộng điểm thưởng. Nếu viết chung trong 1 method service sẽ rất dài, vi phạm Single Responsibility.
+### 📌 Thách thức trong thực tế
+Khi hoàn tất một nghiệp vụ (ví dụ: đăng ký tài khoản thành công), nếu viết toàn bộ logic gửi mail, cộng điểm thưởng, thông báo vào chung 1 hàm Service sẽ vi phạm Single Responsibility Principle, làm hàm dài hàng trăm dòng, chậm chạp và dễ sập toàn bộ nếu 1 tác vụ phụ bị lỗi.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Tách rời nghiệp vụ nội bộ bằng Event trong cùng 1 JVM. Đặc biệt dùng `@TransactionalEventListener(phase = AFTER_COMMIT)` để đảm bảo chỉ gửi mail khi DB đã commit thành công.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Tách rời các nghiệp vụ phụ trợ trong cùng 1 ứng dụng (In-JVM Decoupling).**
+- **Sử dụng `@TransactionalEventListener(phase = AFTER_COMMIT)` để đảm bảo chỉ gửi email hoặc đẩy tin nhắn khi giao dịch DB đã commit thành công.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Spring ApplicationEvent |
+|:---|:---|:---|
+| **Guava EventBus** | `In-memory Bus` | Guava EventBus không tích hợp với Spring Transaction; Spring Events hỗ trợ liên kết chặt chẽ với vòng đời Transaction của Spring. |
+| **Apache Kafka / RabbitMQ** | `External Message Broker` | Kafka/RabbitMQ dùng cho liên service qua mạng; Spring Events siêu nhẹ, chạy hoàn toàn trong RAM của 1 JVM. |
+| **Reactive EventStreams** | `Reactive` | Spring Events trực quan và dễ tiếp cận hơn cho các tác vụ đồng bộ/bất đồng bộ nội bộ. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Cực kỳ nhẹ, không cần cài đặt thêm bất kỳ phần mềm hay broker bên ngoài nào.**
+- **Hỗ trợ mạnh mẽ Transactional Listeners: ngăn chặn lỗi gửi email khi DB bị rollback.**
+- **Có thể chuyển đổi dễ dàng từ xử lý đồng bộ sang bất đồng bộ bằng annotation `@Async`.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Chỉ hoạt động trong phạm vi bộ nhớ của 1 máy chủ (In-JVM); không truyền được sự kiện sang máy chủ khác.
+- Nếu server bị tắt đột ngột (crash/restart), các event đang nằm trong hàng đợi RAM của `@Async` sẽ bị mất.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Cho việc phân tách logic nội bộ trong cùng 1 service Monolith hoặc Microservice. KHÔNG NÊN DÙNG: Để giao tiếp giữa các service phân tán qua mạng (khi đó bắt buộc phải dùng Kafka hoặc RabbitMQ).**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/events/controller/OrderController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/events/controller/OrderController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/events/exception/GlobalExceptionHandler.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
-- `com/example/events/service/OrderService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/events/exception/GlobalExceptionHandler.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
+- `com/example/events/service/OrderService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/events/repository/AuditLogRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
-- `com/example/events/repository/OrderRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/events/repository/AuditLogRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
+- `com/example/events/repository/OrderRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/events/EventsApplication.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -43,7 +72,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -68,33 +97,34 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 08-SpringEvents
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8108`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8108`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8108/api/orders` | Create a new order |
 | `POST` | `http://localhost:8108/api/orders/1/cancel` | Cancel an order |
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

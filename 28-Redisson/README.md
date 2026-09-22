@@ -1,39 +1,68 @@
 # 28-Redisson - Redisson
 
-> **Cổng dịch vụ (Server Port)**: `8128`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8128-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Distributed%20Data%20&%20Locking-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Hệ thống chạy 10 cụm server (cluster), 2 user cùng bấm mua chiếc vé máy bay cuối cùng tại 1 thời điểm. Local lock `synchronized` của Java không có tác dụng trên môi trường phân tán.
+### 📌 Thách thức trong thực tế
+Trong hệ thống chạy cụm 10 server (cluster), 2 khách hàng cùng bấm mua chiếc vé máy bay cuối cùng tại cùng 1 tích tắc. Từ khóa `synchronized` hoặc `ReentrantLock` của Java thuần chỉ có tác dụng trong 1 JVM riêng lẻ, hoàn toàn bất lực trên môi trường phân tán, dẫn tới hiện tượng bán vượt số lượng (overselling/race condition).
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-**Distributed Lock (Khóa phân tán)** với Redis, cấu trúc dữ liệu phân tán (RMap, RQueue, RAtomicLong, Bloom Filter chống thọc thủng cache).
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Khóa phân tán (Distributed Lock - `RLock`) bảo vệ các tài nguyên trọng yếu: trừ tiền ví, đặt vé, giảm tồn kho Flash Sale.**
+- **Sử dụng các cấu trúc dữ liệu phân tán chuẩn Java: RMap (tự động đồng bộ), RQueue, RAtomicLong, Bloom Filter chống thọc thủng cache (Cache Penetration).**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Redisson |
+|:---|:---|:---|
+| **Jedis / Lettuce** | `Low-level Redis Client` | Jedis/Lettuce cung cấp lệnh Redis thô; Redisson nâng tầm Redis thành các cấu trúc dữ liệu và giải thuật phân tán chuẩn Java. |
+| **Apache Curator (Zookeeper)** | `Zookeeper Lock` | Zookeeper lock rất an toàn nhưng hạ tầng Zookeeper nặng nề; Redisson tận dụng ngay cụm Redis có sẵn. |
+| **Database Pessimistic Lock (SELECT FOR UPDATE)** | `DB Lock` | Khóa DB gây nghẽn kết nối và giảm thông lượng DB nghiêm trọng; Redisson Lock thực hiện trên RAM Redis với tốc độ microsecond. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Triển khai thuật toán khóa phân tán chuẩn Redlock với cơ chế tự động gia hạn khóa (Watchdog mechanism) chống treo khóa khi tiến trình bị đơ.**
+- **Cung cấp các cấu trúc phân tán chuẩn Java Collections: `RMap`, `RSet`, `RBlockingQueue`, `RCountDownLatch`.**
+- **Tích hợp sẵn Bloom Filter phân tán giúp chặn đứng các request tìm kiếm ID không tồn tại làm sập Database.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Một số tính năng doanh nghiệp cao cấp (như Local Cache RLocalCachedMap phân tán) yêu cầu bản quyền thương mại Redisson PRO.
+- Cần cấu hình đúng tham số leaseTime và network timeout để tránh nhả khóa sớm khi có sự cố mạng chập chờn.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Bắt buộc phải có cho các bài toán đồng thời phân tán: Flash Sale, giỏ hàng TMĐT, chống click đúp thanh toán trong microservices. KHÔNG NÊN DÙNG: Khi hệ thống chỉ chạy duy nhất 1 node đơn lẻ hoặc chỉ cần thao tác get/set Redis đơn giản.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/redisson/controller/CartController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/redisson/controller/CartController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/redisson/service/CartService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/redisson/service/CartService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/redisson/config/RedissonConfig.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
+- `com/example/redisson/config/RedissonConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/redisson/dto/CartItem.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -52,27 +81,27 @@ redisson:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 28-Redisson
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8128`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8128`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8128/api/cart/user123/items` | Add an item to user cart |
 | `POST` | `http://localhost:8128/api/cart/user123/items` | Add another item to user cart |
@@ -82,6 +111,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

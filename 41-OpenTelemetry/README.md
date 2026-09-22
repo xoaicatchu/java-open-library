@@ -1,39 +1,68 @@
 # 41-OpenTelemetry - OpenTelemetry
 
-> **Cổng dịch vụ (Server Port)**: `8141`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8141-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Distributed%20Tracing%20&%20Observability-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Một request của user đi qua 5 microservice khác nhau bị chậm. Không ai biết nguyên nhân chậm nằm ở service nào hay câu query SQL nào.
+### 📌 Thách thức trong thực tế
+Một request của khách hàng đi qua 5 vi dịch vụ khác nhau (Gateway -> Order Service -> Payment -> Inventory -> Notification) bị phản hồi chậm tới 8 giây. Không ai biết điểm nghẽn (bottleneck) nằm ở service nào, câu query database nào hay network call nào.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-**Distributed Tracing (Truy vết phân tán)**. Tự động truyền ngữ cảnh (W3C Trace Context) qua HTTP header, đo thời gian từng Span và hiển thị trực quan sơ đồ luồng đi trên Jaeger / Zipkin.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Truy vết phân tán (Distributed Tracing): gắn mã `traceId` duy nhất xuyên suốt tất cả các service thông qua HTTP Headers (W3C Trace Context).**
+- **Đo lường thời gian thực thi của từng bước (Spans) và hiển thị trực quan sơ đồ luồng đi dạng Waterfall trên Jaeger, Zipkin hoặc Grafana Tempo.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với OpenTelemetry |
+|:---|:---|:---|
+| **Micrometer Tracing (Spring Cloud Sleuth cũ)** | `Spring Tracing Facade` | Sleuth đã dừng phát triển; OpenTelemetry là tiêu chuẩn mở toàn cầu của Cloud Native Computing Foundation (CNCF). |
+| **Apache SkyWalking** | `APM Platform` | SkyWalking dùng Java Agent tự động; OpenTelemetry là chuẩn đặc tả dữ liệu telemetry (Metrics, Logs, Traces) mở rộng nhất. |
+| **Datadog / Dynatrace Agent** | `Commercial APM` | Giải pháp thương mại đắt đỏ; OpenTelemetry là mã nguồn mở chuẩn mực, tự do hạ tầng. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Tiêu chuẩn công nghiệp số 1 thế giới được toàn bộ các hãng công nghệ lớn (Google, Microsoft, Amazon, Red Hat) hỗ trợ.**
+- **Tự động lan truyền ngữ cảnh (Context Propagation) qua các giao thức HTTP, gRPC, Kafka.**
+- **Cho phép xuất dữ liệu sang bất kỳ Backend APM nào (Jaeger, Zipkin, Prometheus, Grafana, Elastic).**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Tăng kích thước HTTP Header một lượng nhỏ để mang theo W3C Trace Context.
+- Cần cấu hình tỉ lệ lấy mẫu (Sampling Rate) hợp lý để tránh tốn quá nhiều tài nguyên lưu trữ trace trên Production.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Bắt buộc phải có cho mọi kiến trúc Microservices để tìm và sửa lỗi hiệu năng xuyên hệ thống. KHÔNG NÊN DÙNG: Cho ứng dụng Monolith đơn lẻ chỉ có 1 tiến trình duy nhất (khi đó chỉ cần log thông thường).**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/otel/controller/OtelController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/otel/controller/OtelController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/otel/service/OtelService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/otel/service/OtelService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/otel/config/OtelConfig.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
+- `com/example/otel/config/OtelConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/otel/dto/ProcessResponse.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -67,32 +96,33 @@ logging:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 41-OpenTelemetry
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8141`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8141`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `GET` | `http://localhost:8141/api/otel/process` | 1. Kích hoạt Span, Manual Span và Baggage Context (@WithSpan, Tracer.spanBuilder) |
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

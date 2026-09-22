@@ -1,33 +1,62 @@
 # 24-Flyway - Flyway
 
-> **Cổng dịch vụ (Server Port)**: `8124`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8124-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Database%20Schema%20Migration-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Triển khai lên Production nhưng DBA quên chạy script thêm cột mới dẫn tới sập hệ thống; không quản lý được lịch sử nâng cấp DB.
+### 📌 Thách thức trong thực tế
+Khi triển khai ứng dụng lên môi trường Production, việc DBA hoặc lập trình viên phải chạy tay các file script SQL cập nhật bảng rất dễ gặp sai sót (quên chạy script, chạy sai thứ tự, chạy sót cột) dẫn tới ứng dụng mới khởi động lên bị crash do lỗi lệch schema CSDL.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Quản lý version database qua các file `V1__init.sql`, `V2__add_column.sql`. Hệ thống tự động kiểm tra và nâng cấp CSDL khi ứng dụng khởi động trong pipeline CI/CD.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Tự động hóa 100% việc đồng bộ và nâng cấp cấu trúc CSDL trong pipeline CI/CD mỗi khi deploy ứng dụng.**
+- **Đảm bảo toàn bộ môi trường (Local, Dev, Staging, Production) luôn có cùng một phiên bản schema CSDL nhất quán.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Flyway |
+|:---|:---|:---|
+| **Liquibase** | `Multi-format Migration` | Liquibase dùng YAML/XML/SQL độc lập hệ CSDL; Flyway dùng file SQL thuần túy (`V1__...sql`) trực quan và đơn giản hơn rất nhiều. |
+| **Hibernate ddl-auto=update** | `Automatic Schema Tool` | `ddl-auto=update` cực kỳ nguy hiểm trên Production (dễ mất dữ liệu hoặc khóa bảng); Flyway an toàn tuyệt đối với script kiểm soát. |
+| **Manual DBA Scripts** | `Manual Process` | Chạy tay dễ quên và sai sót con người; Flyway lưu bảng lịch sử `flyway_schema_history` kiểm soát mã hash checksum. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Cực kỳ đơn giản và dễ hiểu: lập trình viên chỉ cần viết các file SQL thuần (`V1__init.sql`, `V2__add_index.sql`).**
+- **Tự động tính checksum để ngăn chặn ai đó sửa trộm nội dung script migration cũ đã chạy.**
+- **Tích hợp tự nhiên trong Spring Boot: ứng dụng tự động kiểm tra và chạy script mới khi khởi động.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Bản mã nguồn mở (Community) không hỗ trợ tính năng Rollback tự động (Undo migration chỉ có trong bản Pro/Enterprise).
+- Script viết bằng SQL đặc thù của CSDL nào thì chỉ chạy được trên CSDL đó (không tự dịch cú pháp giữa Oracle và Postgres).
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Là công cụ migration khuyên dùng mặc định cho 90% dự án Spring Boot sử dụng SQL. KHÔNG NÊN DÙNG: Khi dự án cần hỗ trợ triển khai trên nhiều loại RDBMS khác nhau bằng 1 bộ script duy nhất (khi đó nên chọn Liquibase).**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/flyway/controller/FlywayController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/flyway/controller/FlywayController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/flyway/service/ProductService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/flyway/service/ProductService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/flyway/repository/CategoryRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
-- `com/example/flyway/repository/ProductRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/flyway/repository/CategoryRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
+- `com/example/flyway/repository/ProductRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/flyway/entity/Category.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -35,7 +64,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -66,32 +95,33 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 24-Flyway
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8124`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8124`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `GET` | `http://localhost:8124/api/flyway/history` | 1. Xem lịch sử các phiên bản migration đã áp dụng (V1, V2, V3, V4, R) |
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

@@ -1,35 +1,63 @@
 # 40-Micrometer - Micrometer + Prometheus
 
-> **Cổng dịch vụ (Server Port)**: `8140`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8140-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Application%20Metrics%20&%20Monitoring-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Cần biết hệ thống hiện tại đang xử lý bao nhiêu request/giây (QPS), tỉ lệ lỗi 5xx là bao nhiêu %, CPU/RAM tiêu hao thế nào để vẽ biểu đồ Dashboard.
+### 📌 Thách thức trong thực tế
+Ban lãnh đạo và đội DevOps không có cách nào biết được hệ thống đang xử lý bao nhiêu request/giây (QPS), thời gian phản hồi trung bình (p95/p99 latency) là bao nhiêu millisecond, tỉ lệ lỗi 5xx là bao nhiêu % và bộ nhớ JVM Heap còn bao nhiêu. Khi hệ thống quá tải, không có bất kỳ cảnh báo nào trước khi sập.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Thư viện đo đạc chuẩn (Metric Facade). Tạo custom Counter, Timer, Gauge và phơi endpoint `/actuator/prometheus` cho máy chủ Grafana/Prometheus cào dữ liệu định kỳ.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Cung cấp số liệu đo đạc (Metrics) chuẩn mực cho máy chủ Prometheus cào dữ liệu định kỳ qua endpoint `/actuator/prometheus`.**
+- **Tạo các bộ đo đạc nghiệp vụ tùy biến: đếm số đơn hàng thành công (`Counter`), đo thời gian gọi cổng thanh toán (`Timer`), theo dõi số user đang online (`Gauge`).**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Micrometer + Prometheus |
+|:---|:---|:---|
+| **Dropwizard Metrics** | `Legacy Metrics` | Dropwizard Metrics là chuẩn thế hệ cũ; Micrometer là chuẩn thế hệ mới hỗ trợ đa chiều (Dimensional Metrics với Tags). |
+| **JMX (Java Management Extensions)** | `JVM Native` | JMX khó tích hợp với các công cụ Cloud-native hiện đại; Micrometer hỗ trợ chuẩn công nghiệp Prometheus, Datadog, InfluxDB out-of-the-box. |
+| **Custom DB Metric Table** | `Ad-hoc Solution` | Lưu metric vào DB làm tăng tải DB nghiêm trọng; Micrometer tính toán in-memory siêu tốc. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Được ví như 'SLF4J dành cho Metrics': trừu tượng hóa việc đo đạc, cho phép đẩy metric sang Prometheus, Datadog, New Relic chỉ bằng cấu hình.**
+- **Mô hình Dimensional Metrics cực mạnh: gắn các nhãn (tags/labels: `env=prod`, `method=POST`, `status=200`) giúp lọc và vẽ biểu đồ dễ dàng trên Grafana.**
+- **Tích hợp sẵn tự động đo đạc tài nguyên JVM (Heap, GC, Threads) và HTTP server metrics.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Cần cẩn trọng với bài toán High Cardinality: nếu gắn các tag có giá trị biến thiên vô tận (như User ID hoặc Order ID) vào Metric sẽ làm nổ bộ nhớ của Prometheus.
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Tiêu chuẩn bắt buộc phải có cho mọi ứng dụng chạy trên hạ tầng Kubernetes/Cloud để giám sát sức khỏe hệ thống. KHÔNG NÊN DÙNG: Không có lý do loại bỏ.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/micrometer/controller/OrderController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/micrometer/controller/OrderController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/micrometer/service/OrderService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/micrometer/service/OrderService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/micrometer/repository/OrderRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/micrometer/repository/OrderRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/micrometer/config/MetricsConfig.java`: Khởi tạo Bean và thiết lập thông số cho thư viện/framework.
+- `com/example/micrometer/config/MetricsConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/micrometer/dto/OrderRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -37,7 +65,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -79,27 +107,27 @@ management:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 40-Micrometer
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8140`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8140`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8140/api/orders` | Thực thi POST http://localhost:8140/api/orders |
 | `GET` | `http://localhost:8140/api/orders` | Thực thi GET http://localhost:8140/api/orders |
@@ -110,6 +138,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

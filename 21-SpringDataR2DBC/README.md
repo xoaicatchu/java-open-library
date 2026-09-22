@@ -1,32 +1,61 @@
 # 21-SpringDataR2DBC - Spring Data R2DBC
 
-> **Cổng dịch vụ (Server Port)**: `8121`  
-> **Nền tảng kỹ thuật**: Java 21 LTS | Spring Boot 3.4.1 | Maven Standalone | No Lombok
+<p align="left">
+  <img src="https://img.shields.io/badge/Port-8121-007ACC?style=flat-square" alt="Port" />
+  <img src="https://img.shields.io/badge/Category-Reactive%20Data%20Access-6DB33F?style=flat-square" alt="Category" />
+  <img src="https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square" alt="Spring Boot 3.4.1" />
+  <img src="https://img.shields.io/badge/Architecture-No%20Lombok-red?style=flat-square" alt="No Lombok" />
+</p>
 
 ---
 
-## 1. Giới Thiệu & Bài Toán Giải Quyết
+## 1. Bài Toán Thực Tế & Vấn Đề Giải Quyết (Pain Point)
 
-### 📌 Vấn đề Thực Tế (Pain Point)
-Sử dụng WebFlux nhưng JDBC driver truyền thống lại chặn luồng (blocking I/O), làm mất tác dụng của Reactive.
+### 📌 Thách thức trong thực tế
+Khi xây dựng ứng dụng theo kiến trúc Reactive WebFlux, việc sử dụng JDBC driver truyền thống sẽ chặn luồng (blocking I/O) khi truy vấn cơ sở dữ liệu, phá vỡ hoàn toàn lợi thế non-blocking của toàn bộ chuỗi xử lý và gây nghẽn cổ chai nghiêm trọng.
 
-### 🎯 Ứng Dụng Sản Xuất (Production Use Cases)
-Đọc ghi CSDL quan hệ (PostgreSQL, MySQL) hoàn toàn bất đồng bộ (Non-blocking), phù hợp với hệ thống chịu tải kết nối cực lớn.
+### 🎯 Usecase cụ thể trong sản xuất (Production Use Cases)
+- **Hệ thống ứng dụng Reactive toàn trình (End-to-End Reactive: từ WebFlux -> Service -> R2DBC Database).**
+- **Ứng dụng IoT hoặc vi dịch vụ có hàng chục ngàn kết nối đồng thời với lượng thao tác đọc ghi CSDL quan hệ cao.**
 
 ---
 
-## 2. Kiến Trúc & Cấu Trúc Mã Nguồn
+## 2. So Sánh Đối Trọng & Đánh Đổi Kỹ Thuật (Trade-off Analysis)
+
+### ⚖️ Bảng so sánh với các giải pháp tương đương
+| Công nghệ | Phân loại | Điểm khác biệt & Đối chiếu với Spring Data R2DBC |
+|:---|:---|:---|
+| **Spring Data JPA (Blocking JDBC)** | `Traditional ORM` | JPA chặn luồng; R2DBC hoàn toàn Non-blocking trả về `Mono<T>` và `Flux<T>`. |
+| **jOOQ Reactive** | `Reactive Type-Safe SQL` | jOOQ hỗ trợ R2DBC driver nhưng cú pháp phức tạp hơn; Spring Data R2DBC tích hợp sẵn Repository quen thuộc. |
+| **Vert.x SQL Client** | `Reactive Client` | Vert.x SQL Client có tốc độ thô rất cao nhưng Spring Data R2DBC tích hợp mượt hơn vào hệ sinh thái Spring Data. |
+
+### 🌟 Ưu điểm nổi bật (Pros)
+- **Truy cập CSDL quan hệ (PostgreSQL, MySQL, H2) hoàn toàn bất đồng bộ, không làm nghẽn Event Loop.**
+- **Tiết kiệm tài nguyên bộ nhớ và thread connection pool hơn nhiều so với JDBC HikariCP truyền thống.**
+- **Cung cấp `R2dbcEntityTemplate` và `ReactiveCrudRepository` quen thuộc với lập trình viên Spring.**
+
+### ⚠️ Nhược điểm & Thách thức (Cons)
+- Không hỗ trợ các tính năng ORM phức tạp: không có Lazy Loading, không có Dirty Checking, không có tự động ánh xạ quan hệ bảng phức tạp.
+- Hệ sinh thái driver R2DBC chưa hoàn thiện bằng JDBC (vẫn đang tiếp tục trưởng thành).
+
+### 🧭 Ma trận quyết định: Khi nào NÊN dùng & Khi nào KHÔNG NÊN dùng
+- **NÊN DÙNG: Khi toàn bộ ứng dụng được xây dựng trên Spring WebFlux và cần tương tác với CSDL quan hệ. KHÔNG NÊN DÙNG: Khi dự án dùng Spring Web MVC đồng bộ hoặc cần các tính năng ánh xạ quan hệ thực thể phức tạp của Hibernate.**
+
+---
+
+## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
 
 Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
 
-### 🎮 Tầng Tiếp Nhận & API (Controllers / Endpoints)
-- `com/example/r2dbc/controller/ProductController.java`: Điều phối và tiếp nhận các yêu cầu HTTP/Messaging.
+### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
+- `com/example/r2dbc/controller/ProductController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
 
-### ⚙️ Tầng Nghiệp Vụ & Xử Lý (Services / Handlers)
-- `com/example/r2dbc/service/ProductService.java`: Đảm nhiệm logic tính toán, xử lý nghiệp vụ cốt lõi.
+### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
+- `com/example/r2dbc/service/ProductService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
 
 ### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/r2dbc/repository/ProductRepository.java`: Thao tác truy vấn và lưu trữ dữ liệu.
+- `com/example/r2dbc/repository/ProductRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
 
 ### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
 - `com/example/r2dbc/dto/ProductDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
@@ -34,7 +63,7 @@ Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ
 
 ---
 
-## 3. Cấu Hình Tiêu Biểu (`application.yml`)
+## 4. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -55,27 +84,27 @@ spring:
 
 ---
 
-## 4. Hướng Dẫn Chạy & Kiểm Thử
+## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash
 # Di chuyển vào thư mục dự án
 cd 21-SpringDataR2DBC
 
-# Chạy trực tiếp qua Maven
+# Khởi chạy bằng Maven
 mvn spring-boot:run
 ```
-Ứng dụng sẽ khởi động và lắng nghe tại: **`http://localhost:8121`**.
+Ứng dụng sẽ lắng nghe tại cổng: **`http://localhost:8121`**.
 
 ### 🧪 Chạy kiểm thử tự động (Unit / Integration Tests)
 ```bash
 mvn test
 ```
 
-### 📡 Kiểm thử qua file `requests.http`
-Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request trực tiếp bằng công cụ **REST Client** (trên VS Code) hoặc **HTTP Client** (trên IntelliJ IDEA):
+### 📡 Kiểm thử trực tiếp qua HTTP (`requests.http`)
+Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi request kiểm thử trực tiếp bằng tiện ích **REST Client** (VS Code) hoặc **HTTP Client** (IntelliJ IDEA):
 
-| Phương thức | Endpoint URL | Mô tả kịch bản kiểm thử |
+| Phương thức | Endpoint URL | Kịch bản kiểm thử nghiệp vụ |
 |:---|:---|:---|
 | `POST` | `http://localhost:8121/products` | 1. Tạo sản phẩm mới (Reactive Mono<ProductDto>) |
 | `GET` | `http://localhost:8121/products/1` | 2. Lấy sản phẩm theo ID (Mono) |
@@ -86,6 +115,7 @@ Dự án có sẵn file **`requests.http`** ở thư mục gốc để gửi req
 
 ---
 
-## 💡 Lưu Ý Thực Chiến
-- **Java Record**: Toàn bộ DTOs và Events được triển khai bằng Java Record nguyên bản, đảm bảo tính bất biến (immutability) và tối ưu hóa bộ nhớ heap.
-- **Tối ưu hiệu năng**: Không sử dụng Lombok hay reflection tùy tiện, đảm bảo thời gian khởi động (startup time) siêu nhanh và tương thích hoàn toàn với Java 21 Virtual Threads.
+## 💡 Tiêu Chuẩn Kỹ Thuật Dự Án
+- **Java 21 LTS & Virtual Threads**: Tối ưu hóa throughput cho các tác vụ I/O bound.
+- **Java Record Immutability**: 100% DTOs và Events sử dụng Java Records nguyên bản để đảm bảo tính bất biến và an toàn đa luồng.
+- **Zero Lombok**: Mã nguồn minh bạch, không phụ thuộc annotation processing ngầm, khởi động nhanh và tương thích hoàn toàn với GraalVM Native Image.

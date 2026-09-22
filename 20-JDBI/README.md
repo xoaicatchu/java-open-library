@@ -43,27 +43,7 @@ Spring `JdbcTemplate` quá thô sơ (phải tự viết RowMapper thủ công ch
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/jdbi/controller/EmployeeController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
-- `com/example/jdbi/service/EmployeeService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-
-### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/jdbi/config/EmailColumnMapper.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-- `com/example/jdbi/repository/EmployeeDao.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-- `com/example/jdbi/repository/EmployeeRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-
-### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/jdbi/config/JdbiConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 spring:
@@ -90,7 +70,7 @@ server:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

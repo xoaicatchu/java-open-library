@@ -43,31 +43,7 @@ Việc viết code thủ công hàng ngàn dòng `dto.setName(entity.getName())`
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/mapstruct/controller/OrderController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/mapstruct/mapper/CustomerMapper.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-- `com/example/mapstruct/mapper/OrderMapper.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-- `com/example/mapstruct/mapper/ProductMapper.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/mapstruct/dto/CategoryDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mapstruct/dto/CustomerInfo.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mapstruct/dto/OrderResponse.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mapstruct/dto/ProductSummary.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mapstruct/entity/Category.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mapstruct/entity/Customer.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mapstruct/entity/Order.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mapstruct/entity/Product.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -91,7 +67,7 @@ spring:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

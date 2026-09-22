@@ -44,28 +44,7 @@ Dữ liệu bán hàng hoặc danh mục sản phẩm thương mại điện t�
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/mongodb/controller/ProductController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
-- `com/example/mongodb/service/ProductService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-
-### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/mongodb/repository/ProductRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/mongodb/dto/CategoryCountDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mongodb/dto/ProductAvgRatingDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mongodb/entity/Product.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mongodb/entity/Review.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 spring:
@@ -84,7 +63,7 @@ server:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

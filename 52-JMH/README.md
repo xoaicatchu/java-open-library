@@ -42,16 +42,7 @@ Các lập trình viên thường tranh cãi xem giữa 2 thuật toán hoặc 2
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/jmh/controller/BenchmarkController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 spring:
@@ -64,7 +55,7 @@ spring:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

@@ -43,26 +43,7 @@ Quartz Scheduler quá cồng kềnh với hàng chục bảng CSDL và cấu hì
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/jobrunr/controller/JobController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
-- `com/example/jobrunr/service/EmailService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-- `com/example/jobrunr/service/ReportService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-
-### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/jobrunr/config/JobRunrConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/jobrunr/dto/JobRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -91,7 +72,7 @@ org:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

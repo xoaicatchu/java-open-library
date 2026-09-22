@@ -43,23 +43,7 @@ Thư viện tạo PDF nổi tiếng nhất iText từ phiên bản 5 và 7 đã 
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/openpdf/controller/PdfController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
-- `com/example/openpdf/service/PdfService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/openpdf/dto/InvoiceDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/openpdf/dto/ProductDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -84,7 +68,7 @@ spring:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

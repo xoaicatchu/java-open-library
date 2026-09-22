@@ -42,22 +42,7 @@ Trong hệ thống xử lý hàng triệu request mỗi ngày, log dạng văn b
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/logback/controller/OrderController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
-- `com/example/logback/service/OrderService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/logback/dto/OrderRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -74,7 +59,7 @@ spring:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

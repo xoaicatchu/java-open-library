@@ -44,37 +44,7 @@ Tự viết code lọc bảo mật (Custom Filter) rất dễ bỏ sót các l�
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/security/controller/AuthController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-- `com/example/security/controller/ProductController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
-- `com/example/security/security/CustomUserDetailsService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-- `com/example/security/service/AuthService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-
-### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/security/repository/ProductRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-- `com/example/security/repository/UserRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-
-### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/security/SecurityApplication.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
-- `com/example/security/config/SecurityConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/security/dto/AuthRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/security/dto/AuthResponse.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/security/dto/RegisterRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/security/entity/Product.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/security/entity/Role.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/security/entity/User.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -103,7 +73,7 @@ jwt:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

@@ -43,33 +43,7 @@ Vòng đời trạng thái đơn hàng trong thương mại điện tử (`CREAT
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/statemachine/controller/OrderController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
-- `com/example/statemachine/exception/GlobalExceptionHandler.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-- `com/example/statemachine/service/OrderService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-
-### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/statemachine/repository/OrderRepository.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-
-### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/statemachine/config/StateMachineConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/statemachine/domain/OrderEvent.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/statemachine/dto/HistoryDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/statemachine/dto/OrderDto.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/statemachine/entity/OrderEntity.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/statemachine/entity/StateHistory.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -94,7 +68,7 @@ spring:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

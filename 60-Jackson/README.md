@@ -43,20 +43,7 @@ Trong thực tế, một API cần ẩn giấu một số trường dữ liệu 
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/jackson/controller/MoneyController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-- `com/example/jackson/controller/NotificationController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### 🔧 Cấu Hình & Tích Hợp (Configurations)
-- `com/example/jackson/config/JacksonConfig.java`: Thiết lập thông số và khởi tạo Spring Beans cho thư viện.
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -71,7 +58,7 @@ spring:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

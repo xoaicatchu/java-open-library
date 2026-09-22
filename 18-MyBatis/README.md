@@ -43,37 +43,7 @@ Trong các hệ thống tài chính và ngân hàng, các câu lệnh SQL cực 
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/mybatis/controller/CategoryController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-- `com/example/mybatis/controller/ProductController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### ⚙️ Tầng Nghiệp Vụ Cốt Lõi (Services / Handlers)
-- `com/example/mybatis/exception/GlobalExceptionHandler.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-- `com/example/mybatis/handler/ProductStatusTypeHandler.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-- `com/example/mybatis/service/CategoryService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-- `com/example/mybatis/service/ProductService.java`: Đảm nhiệm xử lý logic nghiệp vụ và tính toán chính.
-
-### 🗄️ Tầng Dữ Liệu & Truy Vấn (Repositories / Mappers)
-- `com/example/mybatis/mapper/CategoryMapper.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-- `com/example/mybatis/mapper/ProductMapper.java`: Thao tác truy vấn và tương tác với tầng lưu trữ dữ liệu.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/mybatis/dto/CategoryResponse.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mybatis/dto/CreateCategoryRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mybatis/dto/CreateProductRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mybatis/dto/ProductResponse.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mybatis/dto/UpdateProductRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mybatis/entity/Category.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mybatis/entity/Product.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-- `com/example/mybatis/entity/ProductStatus.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 server:
@@ -100,7 +70,7 @@ mybatis:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

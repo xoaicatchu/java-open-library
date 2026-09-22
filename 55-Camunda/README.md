@@ -43,21 +43,7 @@ Quy trình phê duyệt nghiệp vụ phức tạp (ví dụ: hồ sơ vay vốn
 
 ---
 
-## 3. Kiến Trúc & Cấu Trúc Mã Nguồn Trong Dự Án
-
-Dự án mẫu minh họa đầy đủ luồng nghiệp vụ thực chiến từ tiếp nhận request, xử lý nghiệp vụ đến kiểm thử tự động:
-
-### 🎮 Tầng Tiếp Nhận & Điều Phối (Controllers / Endpoints)
-- `com/example/camunda/controller/ProcessController.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-- `com/example/camunda/delegate/ProcessOrderDelegate.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-- `com/example/camunda/delegate/RejectOrderDelegate.java`: Tiếp nhận và điều phối các yêu cầu HTTP/Messaging.
-
-### 📦 Mô Hình Dữ Liệu & Sự Kiện (DTOs / Models / Entities / Events)
-- `com/example/camunda/dto/StartProcessRequest.java`: Đối tượng truyền tải dữ liệu (Java Record bất biến / Domain Model).
-
----
-
-## 4. Cấu Hình Tiêu Biểu (`application.yml`)
+## 3. Cấu Hình Tiêu Biểu (`application.yml`)
 
 ```yaml
 spring:
@@ -85,7 +71,7 @@ camunda.bpm:
 
 ---
 
-## 5. Hướng Dẫn Khởi Chạy & Kiểm Thử
+## 4. Hướng Dẫn Khởi Chạy & Kiểm Thử
 
 ### 🚀 Khởi chạy ứng dụng
 ```bash

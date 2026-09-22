@@ -1,0 +1,72 @@
+### Tạo sản phẩm
+POST http://localhost:8101/api/products
+Content-Type: application/json
+
+{
+    "name": "Laptop Dell XPS 15",
+    "description": "Intel Core i7, 16GB RAM, 512GB SSD",
+    "price": 32000000,
+    "category": "Electronics",
+    "stockQuantity": 25
+}
+###
+POST http://localhost:8101/api/products
+Content-Type: application/json
+
+{
+    "name": "iPhone 16 Pro Max",
+    "description": "Apple A18 Pro, 256GB, Titanium",
+    "price": 34990000,
+    "category": "Electronics",
+    "stockQuantity": 100
+}
+###
+POST http://localhost:8101/api/products
+Content-Type: application/json
+
+{
+    "name": "",
+    "price": -1,
+    "category": "",
+    "stockQuantity": -5
+}
+
+HTTP/1.1 400  - Bad Request
+content-type: application/problem+json
+transfer-encoding: chunked
+date: Tue, 22 Sep 2026 15:45:20 GMT
+connection: close
+###
+
+###
+
+###
+GET http://localhost:8101/api/products?page=0&size=10&sort=name,asc
+
+HTTP/1.1 200  - OK
+content-type: application/json
+transfer-encoding: chunked
+date: Tue, 22 Sep 2026 15:45:50 GMT
+connection: close
+###
+GET http://localhost:8101/api/products/1
+###
+GET http://localhost:8101/api/products/99999
+###
+GET http://localhost:8101/api/products/category/Electronics
+###
+GET http://localhost:8101/api/products/search?keyword=laptop&page=0&size=10
+###
+PUT http://localhost:8101/api/products/1
+Content-Type: application/json
+
+{
+    "name": "Laptop Dell XPS 15 (2025)",
+    "description": "Intel Core Ultra 7, 32GB RAM, 1TB SSD",
+    "price": 38000000,
+    "category": "Electronics",
+    "stockQuantity": 15,
+    "active": true
+}
+###
+DELETE http://localhost:8101/api/products/2

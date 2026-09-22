@@ -1,0 +1,30 @@
+server:
+  port: 8141
+
+spring:
+  application:
+    name: otel-demo
+  threads:
+    virtual:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  tracing:
+    sampling:
+      probability: 1.0
+    baggage:
+      remote-fields: "user-id,session-id"
+      correlation:
+        enabled: true
+        fields: "user-id,session-id"
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"

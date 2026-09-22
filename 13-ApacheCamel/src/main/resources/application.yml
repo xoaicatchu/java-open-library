@@ -1,0 +1,19 @@
+server:
+  port: 8113
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: apache-camel-demo
+
+camel:
+  springboot:
+    name: OrderCamelApp
+  servlet:
+    mapping:
+      context-path: /api/*
+  rest:
+    component: servlet
+    binding-mode: json

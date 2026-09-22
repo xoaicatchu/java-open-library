@@ -1,0 +1,22 @@
+server:
+  port: 8104
+
+spring:
+  application:
+    name: 04-SpringHATEOAS
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:employeedb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  mvc:
+    problemdetails:
+      enabled: true

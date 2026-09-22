@@ -1,0 +1,14 @@
+### Tải xuống file Excel chứa danh sách sản phẩm
+GET http://localhost:8157/api/excel/export
+
+### Tải lên file Excel để nhập dữ liệu
+# Lưu ý: Cần sử dụng client hỗ trợ multipart/form-data để đính kèm file
+POST http://localhost:8157/api/excel/import
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="products.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+< ./products.xlsx
+--boundary--

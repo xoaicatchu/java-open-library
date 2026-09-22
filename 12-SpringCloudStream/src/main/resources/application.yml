@@ -1,0 +1,36 @@
+server:
+  port: 8112
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: cloudstream-demo
+  datasource:
+    url: jdbc:h2:mem:orderdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  cloud:
+    stream:
+      function:
+        definition: enrichOrder;processOrder
+      bindings:
+        enrichOrder-in-0:
+          destination: raw-orders
+        enrichOrder-out-0:
+          destination: enriched-orders
+        processOrder-in-0:
+          destination: enriched-orders
+          group: process-group
+          consumer:
+            max-attempts: 1
+      default:
+        producer:
+          partitionKeyExpression: payload.orderId
+          partitionCount: 2

@@ -1,0 +1,23 @@
+### Get Product (Trigger Flow Rule if called > 2 times per second)
+GET http://localhost:8130/products/1
+
+### Create Product (Normal)
+POST http://localhost:8130/products
+Content-Type: application/json
+
+{
+  "name": "Normal Product",
+  "price": 100.0
+}
+
+### Create Product (Trigger Error -> Circuit Breaker after 2 calls)
+POST http://localhost:8130/products
+Content-Type: application/json
+
+{
+  "name": "error",
+  "price": 0.0
+}
+
+### Delete Product (Programmatic API)
+DELETE http://localhost:8130/products/1

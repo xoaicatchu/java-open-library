@@ -1,0 +1,14 @@
+server:
+  port: 8128
+spring:
+  application:
+    name: redisson-demo
+  threads:
+    virtual:
+      enabled: true
+  cache:
+    type: redis
+
+redisson:
+  # Using dummy URL, we will mock for tests anyway, but for running app it would need actual Redis
+  address: "redis://127.0.0.1:6379"

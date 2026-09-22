@@ -1,0 +1,15 @@
+server:
+  port: 8114
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+
+mqtt:
+  broker-url: tcp://localhost:1883
+  client-id: spring-boot-iot-client
+  auto-reconnect: true
+  clean-start: true
+  connection-timeout: 10
+  keep-alive-interval: 60

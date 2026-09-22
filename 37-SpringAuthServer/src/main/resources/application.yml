@@ -1,0 +1,13 @@
+server:
+  port: 8137
+
+spring:
+  application:
+    name: auth-server
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.security: TRACE

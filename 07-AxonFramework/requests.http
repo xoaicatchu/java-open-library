@@ -1,0 +1,29 @@
+### Create Account
+POST http://localhost:8107/accounts
+Content-Type: application/json
+
+{
+  "owner": "John Doe",
+  "initialBalance": 1000
+}
+
+> {% client.global.set("accountId", response.body); %}
+
+### Deposit Money
+POST http://localhost:8107/accounts/{{accountId}}/deposit
+Content-Type: application/json
+
+{
+  "amount": 500
+}
+
+### Withdraw Money
+POST http://localhost:8107/accounts/{{accountId}}/withdraw
+Content-Type: application/json
+
+{
+  "amount": 200
+}
+
+### Get Account
+GET http://localhost:8107/accounts/{{accountId}}

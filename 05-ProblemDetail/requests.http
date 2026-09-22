@@ -1,0 +1,47 @@
+### Create Order
+POST http://localhost:8105/api/orders
+Content-Type: application/json
+
+{
+  "customerId": "CUST-001",
+  "items": [
+    {
+      "productId": "PROD-100",
+      "quantity": 2,
+      "price": 150.00
+    }
+  ]
+}
+
+### Create Order with Out of Stock
+POST http://localhost:8105/api/orders
+Content-Type: application/json
+
+{
+  "customerId": "CUST-002",
+  "items": [
+    {
+      "productId": "OUT_OF_STOCK_ITEM",
+      "quantity": 1,
+      "price": 500.00
+    }
+  ]
+}
+
+### Get Order Not Found
+GET http://localhost:8105/api/orders/999
+
+### Validation Error
+POST http://localhost:8105/api/orders
+Content-Type: application/json
+
+{
+  "customerId": "",
+  "items": []
+}
+
+### Cancel Order
+POST http://localhost:8105/api/orders/1/cancel
+
+### Pay Order Declined
+POST http://localhost:8105/api/orders/1/pay?reasonCode=DECLINED_BY_BANK

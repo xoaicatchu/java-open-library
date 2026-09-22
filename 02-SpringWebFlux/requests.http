@@ -1,0 +1,32 @@
+### Get all products
+GET http://localhost:8102/api/products
+Accept: application/json
+
+### Get product by ID
+GET http://localhost:8102/api/products/1
+Accept: application/json
+
+### Get product by ID (Not Found)
+GET http://localhost:8102/api/products/999
+Accept: application/json
+
+### Create new product
+POST http://localhost:8102/api/products
+Content-Type: application/json
+
+{
+  "name": "Tablet",
+  "price": 300.0
+}
+
+### Get all products (Functional Endpoint)
+GET http://localhost:8102/functional/products
+Accept: application/json
+
+### SSE Stream
+GET http://localhost:8102/api/products/stream
+Accept: text/event-stream
+
+### Backpressure Demo
+GET http://localhost:8102/api/products/backpressure
+Accept: application/x-ndjson

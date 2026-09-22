@@ -1,0 +1,21 @@
+### Create an order via REST (StreamBridge)
+POST http://localhost:8112/api/orders
+Content-Type: application/json
+
+{
+  "orderId": "ORD-001",
+  "customerId": "CUST-A",
+  "amount": 150.00,
+  "shouldFail": false
+}
+
+### Create an order that should fail processing
+POST http://localhost:8112/api/orders
+Content-Type: application/json
+
+{
+  "orderId": "ORD-FAIL",
+  "customerId": "CUST-B",
+  "amount": 50.00,
+  "shouldFail": true
+}

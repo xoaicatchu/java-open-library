@@ -1,0 +1,23 @@
+###
+POST http://localhost:8140/api/orders
+Content-Type: application/json
+
+{
+  "productCode": "P-100",
+  "amount": 250.50
+}
+
+###
+GET http://localhost:8140/api/orders
+
+###
+POST http://localhost:8140/api/orders/users/login
+
+###
+POST http://localhost:8140/api/orders/users/logout
+
+###
+GET http://localhost:8140/actuator/metrics
+
+###
+GET http://localhost:8140/actuator/prometheus

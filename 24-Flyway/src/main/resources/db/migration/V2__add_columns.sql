@@ -1,0 +1,2 @@
+ALTER TABLE products ADD COLUMN status VARCHAR(50) DEFAULT 'ACTIVE';
+ALTER TABLE products ADD COLUMN description TEXT;

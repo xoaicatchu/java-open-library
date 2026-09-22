@@ -1,0 +1,11 @@
+### Send message via REST
+POST http://localhost:8116/api/messages
+Content-Type: application/json
+
+{
+  "sender": "Admin",
+  "content": "Hello Everyone",
+  "type": "CHAT",
+  "recipient": null,
+  "room": "general"
+}

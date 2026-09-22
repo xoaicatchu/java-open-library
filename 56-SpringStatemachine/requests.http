@@ -1,0 +1,11 @@
+### Create Order
+POST http://localhost:8156/api/orders?description=New%20Order
+
+### Submit Order
+POST http://localhost:8156/api/orders/1/events?event=SUBMIT
+
+### Pay Order
+POST http://localhost:8156/api/orders/1/events?event=PAY
+
+### Get Order
+GET http://localhost:8156/api/orders/1

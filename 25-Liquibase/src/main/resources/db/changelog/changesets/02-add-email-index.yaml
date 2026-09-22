@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-add-email-column
+      author: dev
+      changes:
+        - addColumn:
+            tableName: employees
+            columns:
+              - column:
+                  name: email
+                  type: varchar(255)
+      rollback:
+        - dropColumn:
+            tableName: employees
+            columnName: email
+  - changeSet:
+      id: 02-create-email-index
+      author: dev
+      changes:
+        - createIndex:
+            tableName: employees
+            indexName: idx_employee_email
+            columns:
+              - column:
+                  name: email
+      rollback:
+        - dropIndex:
+            tableName: employees
+            indexName: idx_employee_email

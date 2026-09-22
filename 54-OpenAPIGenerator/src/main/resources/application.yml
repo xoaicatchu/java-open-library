@@ -1,0 +1,9 @@
+server:
+  port: 8154
+
+spring:
+  application:
+    name: 54-OpenAPIGenerator
+  threads:
+    virtual:
+      enabled: true

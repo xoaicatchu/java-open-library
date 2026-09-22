@@ -1,0 +1,9 @@
+server:
+  port: 8115
+spring:
+  threads:
+    virtual:
+      enabled: true
+grpc:
+  server:
+    port: 9090

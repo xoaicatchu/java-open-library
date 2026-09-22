@@ -1,0 +1,46 @@
+server:
+  port: 8142
+
+spring:
+  application:
+    name: actuator-demo
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:actuatordb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,beans,mappings,conditions,orders
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+    env:
+      show-values: always
+  info:
+    env:
+      enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+info:
+  app:
+    name: Actuator Demo App
+    description: A sample Spring Boot application demonstrating Actuator features
+    version: 1.0.0

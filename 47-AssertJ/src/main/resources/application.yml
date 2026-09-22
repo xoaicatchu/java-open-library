@@ -1,0 +1,6 @@
+server:
+  port: 8147
+spring:
+  threads:
+    virtual:
+      enabled: true

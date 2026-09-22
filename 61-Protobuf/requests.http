@@ -1,0 +1,27 @@
+### Get default product as JSON
+GET http://localhost:8161/api/products/p1
+Accept: application/json
+
+### Get default product as Protobuf
+GET http://localhost:8161/api/products/p1
+Accept: application/x-protobuf
+
+### Create new product as JSON
+POST http://localhost:8161/api/products
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": "p3",
+  "name": "Wireless Mouse",
+  "price": 50.0,
+  "category": {
+    "id": 2,
+    "name": "Accessories"
+  },
+  "tags": [
+    "mouse",
+    "wireless"
+  ],
+  "activeStatus": "Available"
+}

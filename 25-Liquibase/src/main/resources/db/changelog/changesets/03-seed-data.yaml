@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-seed-departments
+      author: dev
+      context: dev
+      changes:
+        - insert:
+            tableName: departments
+            columns:
+              - column:
+                  name: name
+                  value: Engineering
+        - insert:
+            tableName: departments
+            columns:
+              - column:
+                  name: name
+                  value: HR
+      rollback:
+        - delete:
+            tableName: departments
+            where: "name IN ('Engineering', 'HR')"
+  - changeSet:
+      id: 03-seed-employees
+      author: dev
+      context: dev
+      changes:
+        - insert:
+            tableName: employees
+            columns:
+              - column:
+                  name: first_name
+                  value: Alice
+              - column:
+                  name: last_name
+                  value: Smith
+              - column:
+                  name: email
+                  value: alice@example.com
+              - column:
+                  name: department_id
+                  valueComputed: (SELECT id FROM departments WHERE name = 'Engineering')
+      rollback:
+        - delete:
+            tableName: employees
+            where: "email = 'alice@example.com'"

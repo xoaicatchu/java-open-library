@@ -1,0 +1,15 @@
+server:
+  port: 8102
+spring:
+  application:
+    name: spring-webflux-demo
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+  threads:
+    virtual:
+      enabled: true

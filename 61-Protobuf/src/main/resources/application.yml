@@ -1,0 +1,8 @@
+server:
+  port: 8161
+spring:
+  application:
+    name: protobuf-demo
+  threads:
+    virtual:
+      enabled: true

@@ -1,0 +1,11 @@
+GET http://localhost:8138/api/products
+
+###
+POST http://localhost:8138/api/products
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "name": "New Product",
+  "price": 100.0
+}

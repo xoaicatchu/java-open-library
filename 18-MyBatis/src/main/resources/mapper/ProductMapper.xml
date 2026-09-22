@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mybatis.mapper.ProductMapper">
+
+    <resultMap id="ProductResultMap" type="Product">
+        <id property="id" column="p_id"/>
+        <result property="name" column="p_name"/>
+        <result property="price" column="p_price"/>
+        <result property="categoryId" column="p_category_id"/>
+        <result property="status" column="p_status" typeHandler="com.example.mybatis.handler.ProductStatusTypeHandler"/>
+        <association property="category" javaType="Category">
+            <id property="id" column="c_id"/>
+            <result property="name" column="c_name"/>
+            <result property="description" column="c_description"/>
+        </association>
+    </resultMap>
+
+    <select id="findById" resultType="Product">
+        SELECT id, name, price, category_id, status FROM product WHERE id = #{id}
+    </select>
+
+    <select id="findWithCategory" resultMap="ProductResultMap">
+        SELECT p.id as p_id, p.name as p_name, p.price as p_price, p.category_id as p_category_id, p.status as p_status,
+               c.id as c_id, c.name as c_name, c.description as c_description
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.id
+    </select>
+
+    <select id="findDynamic" resultMap="ProductResultMap">
+        SELECT p.id as p_id, p.name as p_name, p.price as p_price, p.category_id as p_category_id, p.status as p_status,
+               c.id as c_id, c.name as c_name, c.description as c_description
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.id
+        <where>
+            <if test="name != null and name != ''">
+                AND p.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="minPrice != null">
+                AND p.price &gt;= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND p.price &lt;= #{maxPrice}
+            </if>
+            <if test="statusList != null and statusList.size() > 0">
+                AND p.status IN
+                <foreach item="item" collection="statusList" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product (name, price, category_id, status)
+        VALUES (#{name}, #{price}, #{categoryId}, #{status, typeHandler=com.example.mybatis.handler.ProductStatusTypeHandler})
+    </insert>
+
+    <update id="update">
+        UPDATE product
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="status != null">status = #{status, typeHandler=com.example.mybatis.handler.ProductStatusTypeHandler}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM product WHERE id = #{id}
+    </delete>
+
+</mapper>

@@ -1,0 +1,13 @@
+### Create a new order
+POST http://localhost:8108/api/orders
+Content-Type: application/json
+
+{
+  "productName": "MacBook Pro",
+  "quantity": 1
+}
+
+###
+
+### Cancel an order
+POST http://localhost:8108/api/orders/1/cancel

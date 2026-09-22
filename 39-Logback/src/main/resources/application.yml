@@ -1,0 +1,10 @@
+server:
+  port: 8139
+spring:
+  application:
+    name: logback-example
+  threads:
+    virtual:
+      enabled: true
+  profiles:
+    active: dev

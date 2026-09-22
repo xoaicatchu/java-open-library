@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: 23-SpringDataMongoDB
+  threads:
+    virtual:
+      enabled: true
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/testdb
+      auto-index-creation: true
+server:
+  port: 8123

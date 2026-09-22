@@ -1,0 +1,16 @@
+### Enqueue email job
+POST http://localhost:8144/jobs/email
+Content-Type: application/json
+
+{
+  "userId": "user-123"
+}
+
+### Schedule report job
+POST http://localhost:8144/jobs/report/schedule
+
+### Schedule recurring report
+POST http://localhost:8144/jobs/report/recurring
+
+### Delete recurring report
+DELETE http://localhost:8144/jobs/report/recurring

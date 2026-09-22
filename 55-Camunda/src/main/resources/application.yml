@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: camunda-app
+  datasource:
+    url: jdbc:h2:mem:camunda;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8155
+
+camunda.bpm:
+  admin-user:
+    id: admin
+    password: admin
+  database:
+    schema-update: true
+  filter:
+    create: All tasks

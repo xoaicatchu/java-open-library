@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: 04-add-salary
+      author: dev
+      changes:
+        - addColumn:
+            tableName: employees
+            columns:
+              - column:
+                  name: salary
+                  type: decimal(10, 2)
+      rollback:
+        - dropColumn:
+            tableName: employees
+            columnName: salary
+  - changeSet:
+      id: 04-modify-email-type
+      author: dev
+      changes:
+        - modifyDataType:
+            tableName: employees
+            columnName: email
+            newDataType: varchar(150)
+      rollback:
+        - modifyDataType:
+            tableName: employees
+            columnName: email
+            newDataType: varchar(255)

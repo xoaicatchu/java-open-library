@@ -1,0 +1,20 @@
+server:
+  port: 8118
+spring:
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.example.mybatis.entity
+  type-handlers-package: com.example.mybatis.handler
+  configuration:
+    map-underscore-to-camel-case: true

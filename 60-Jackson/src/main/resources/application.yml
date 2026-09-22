@@ -1,0 +1,8 @@
+server:
+  port: 8160
+spring:
+  application:
+    name: jackson-demo
+  threads:
+    virtual:
+      enabled: true

@@ -1,0 +1,15 @@
+### Start Process
+POST http://localhost:8155/api/orders/start
+Content-Type: application/json
+
+{
+  "orderId": "O-100",
+  "customerName": "John Doe"
+}
+
+### Get Tasks
+GET http://localhost:8155/api/orders/tasks
+
+### Complete Task (Approved)
+# Replace {taskId} with actual ID from GET response
+POST http://localhost:8155/api/orders/tasks/{taskId}/complete?approved=true

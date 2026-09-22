@@ -1,0 +1,38 @@
+### GET all employees
+GET http://localhost:8104/employees
+Accept: application/hal+json
+
+### GET employee by ID (Replace {id} with actual ID)
+GET http://localhost:8104/employees/1
+Accept: application/hal+json
+
+### GET employees by department
+GET http://localhost:8104/employees/department/IT
+Accept: application/hal+json
+
+### POST create a new employee
+POST http://localhost:8104/employees
+Content-Type: application/json
+Accept: application/hal+json
+
+{
+  "name": "Charlie",
+  "role": "Designer",
+  "department": "UX",
+  "salary": 4000.0
+}
+
+### PUT update an employee (Replace {id} with actual ID)
+PUT http://localhost:8104/employees/1
+Content-Type: application/json
+Accept: application/hal+json
+
+{
+  "name": "Charlie Updated",
+  "role": "Lead Designer",
+  "department": "UX",
+  "salary": 5000.0
+}
+
+### DELETE an employee (Replace {id} with actual ID)
+DELETE http://localhost:8104/employees/1

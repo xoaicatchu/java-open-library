@@ -6,7 +6,6 @@
   <img src="https://img.shields.io/badge/Projects-61%20Modules-007ACC?style=for-the-badge&logo=maven&logoColor=white" alt="Projects" />
   <img src="https://img.shields.io/badge/REST%20Ready-100%25-brightgreen?style=for-the-badge" alt="REST Ready" />
   <img src="https://img.shields.io/badge/Tests-TDD%20Verified-blueviolet?style=for-the-badge" alt="Tests" />
-  <img src="https://img.shields.io/badge/Lombok-Zero%20Dependency-red?style=for-the-badge" alt="No Lombok" />
 </p>
 
 ---
@@ -16,14 +15,13 @@
 Kho lưu trữ này là **Bộ tài liệu kiến trúc thực chiến và mã nguồn mẫu toàn diện gồm 61 dự án độc lập (Standalone Projects)** trong hệ sinh thái **Java 21 & Spring Boot 3.4.1**.
 
 ### 🎯 Triết lý cốt lõi (Core Principles)
-1. **Giải quyết triệt để vấn đề thực tế (Zero-Fluff)**: Không dạy cú pháp "Hello World" học vẹt. Mỗi project tập trung trực diện vào **bài toán sản xuất (Pain Point)** và **ứng dụng thực tiễn (Enterprise Production Use Case)**.
-2. **Chuẩn hóa kỹ thuật cấp Enterprise**:
-   - **Java 21 LTS**: 100% hỗ trợ **Virtual Threads** (`spring.threads.virtual.enabled: true`), Pattern Matching, Sealed Interfaces.
-   - **Java Records**: Dùng Record nguyên bản làm DTO và Domain Event, đảm bảo tính bất biến (Immutability) và tối ưu hóa bộ nhớ Heap.
-   - **Nói KHÔNG với Lombok**: Loại bỏ hoàn toàn annotation processing can thiệp bytecode ngầm, giúp code minh bạch, tăng tốc độ compile và tương thích hoàn hảo với GraalVM Native Image.
+1. **Tập trung vào bài toán thực tế**: Mỗi project giải quyết một **bài toán sản xuất cụ thể (Pain Point)** kèm các use case doanh nghiệp thực tiễn, không dừng lại ở mức hướng dẫn cú pháp cơ bản.
+2. **Chuẩn hóa kỹ thuật**:
+   - **Java 21 LTS**: Sử dụng **Virtual Threads** (`spring.threads.virtual.enabled: true`), Pattern Matching, Sealed Interfaces.
+   - **Java Records**: Sử dụng Record làm DTO và Domain Event, đảm bảo tính bất biến (Immutability) và tối ưu hóa bộ nhớ.
    - **Độc lập hoàn toàn**: Mỗi dự án là một Maven module độc lập, có thể copy và chạy ngay lập tức mà không phụ thuộc module cha.
    - **Cổng dịch vụ phân lập**: 61 dự án được gán dải cổng riêng biệt từ `8101` đến `8161`, không trùng lặp.
-   - **100% Sẵn sàng kiểm thử**: Mọi dự án đều có **REST Controller**, **Unit/Integration Test (TDD)** và file kịch bản gọi API **`requests.http`** chuẩn hóa.
+   - **Sẵn sàng kiểm thử**: Mọi dự án đều có **REST Controller**, **Unit/Integration Test** và file kịch bản gọi API **`requests.http`** chuẩn hóa.
 
 ---
 
